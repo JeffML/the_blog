@@ -1,10 +1,10 @@
 'use strict';
 
 module.exports = {
-  url: 'https://lumen.netlify.com',
+  url: `https://boring-ritchie-d2864b.netlify.com/`, //'https://lumen.netlify.com',
   pathPrefix: '/',
   title: 'Blog by Jeff Lowery',
-  subtitle: 'Pellentesque odio nisi, euismod in, pharetra a, ultricies in, diam. Sed arcu.',
+  subtitle: 'Random intellectual curios.',
   copyright: '© All rights reserved.',
   disqusShortname: '',
   postsPerPage: 4,
@@ -24,16 +24,13 @@ module.exports = {
     }
   ],
   author: {
-    name: 'John Doe',
+    name: 'Jeff Lowery',
     photo: '/photo.jpg',
-    bio: 'Pellentesque odio nisi, euismod in, pharetra a, ultricies in, diam. Sed arcu.',
+    bio: 'Longtime IT pro with a lovely wife, above-average kids, and obnoxious cats.',
     contacts: {
-      email: '#',
-      telegram: '#',
-      twitter: '#',
-      github: '#',
-      rss: '#',
-      vkontakte: '#'
+      email: 'jlowery2663@gmail.com',
+      twitter: 'https://twitter.com/jmlowery',
+      github: 'https://github.com/JeffML'
     }
   }
 };

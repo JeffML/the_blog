@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-  url: `https://boring-ritchie-d2864b.netlify.com/`, //'https://lumen.netlify.com',
+  url: 'https://boring-ritchie-d2864b.netlify.com/', //'https://lumen.netlify.com',
   pathPrefix: '/',
   title: 'Blog by Jeff Lowery',
   subtitle: 'Random intellectual curios.',

@@ -2,7 +2,7 @@
 template: page
 title: About me
 slug: 'Who I am, what I do now, and how I came to be here.'
-draft: true
+draft: false
 ---
 Why, hello there. I'll keep this as brief as I can.
 

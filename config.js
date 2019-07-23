@@ -29,8 +29,8 @@ module.exports = {
     bio: 'Longtime IT pro with a lovely wife, above-average kids, and obnoxious cats.',
     contacts: {
       email: 'jlowery2663@gmail.com',
-      twitter: 'https://twitter.com/jmlowery',
-      github: 'https://github.com/JeffML'
+      twitter: '/jmlowery',
+      github: '/JeffML'
     }
   }
 };

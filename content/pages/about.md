@@ -6,6 +6,8 @@ draft: false
 ---
 Why, hello there. I'll keep this as brief as I can.
 
+![](/media/gutenberg.jpg)
+
 I've had a long career, from startups to enterprise projects.  In my first job I used a 4GL language to write interdepartmental applications for rural hospitals.  In the six years I was there (most that time as the only employee), we went from two installation to nine. 
 
 Next was a project converting aircraft maintenance manuals from a a set of mainframe file to SGML markup on UNIX workstations. We achieved 80% customer satisfaction in a survey conducted after we shipped.

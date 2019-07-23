@@ -1,7 +1,7 @@
 ---
 template: page
 title: Contact
-slug: slug
-draft: true
+slug: /pages/contacts
+draft: false
 ---
 test

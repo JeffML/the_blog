@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-  url: 'https://boring-ritchie-d2864b.netlify.com/', //'https://lumen.netlify.com',
+  url: 'https://boring-ritchie-d2864b.netlify.com/',
   pathPrefix: '/',
   title: 'Blog by Jeff Lowery',
   subtitle: 'Random intellectual curios.',
@@ -28,9 +28,9 @@ module.exports = {
     photo: '/photo.jpg',
     bio: 'Longtime IT pro with a lovely wife, above-average kids, and obnoxious cats.',
     contacts: {
-      email: 'jlowery2663@gmail.com',
-      twitter: '/jmlowery',
-      github: '/JeffML'
+      email: 'jeff@jeffamabob.com',
+      twitter: 'jmlowery',
+      github: 'JeffML'
     }
   }
 };

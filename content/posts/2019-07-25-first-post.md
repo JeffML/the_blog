@@ -7,7 +7,8 @@ date: 2019-07-25T12:09:40.901Z
 description: In which I wax eloquently.
 category: General
 tags:
-  - general; blogging
+  - general
+  - blogging
 ---
 ![](/media/old_fence_post.jpg)
 

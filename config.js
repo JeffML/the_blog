@@ -1,10 +1,10 @@
 'use strict';
 
 module.exports = {
-  url: 'https://boring-ritchie-d2864b.netlify.com/',
+  url: 'https://jeffamabob.com/',
   pathPrefix: '/',
   title: 'Blog by Jeff Lowery',
-  subtitle: 'Random intellectual curios.',
+  subtitle: 'Random projects and other curios',
   copyright: '© All rights reserved.',
   disqusShortname: '',
   postsPerPage: 4,

@@ -25,7 +25,7 @@ module.exports = {
   ],
   author: {
     name: 'Jeff Lowery',
-    photo: '/photo3.jpg',
+    photo: '/photo1.jpg',
     bio: 'Longtime IT pro with a lovely wife, above-average kids, and obnoxious cats.',
     contacts: {
       email: 'jeff@jeffamabob.com',

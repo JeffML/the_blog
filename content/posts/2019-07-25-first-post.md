@@ -2,7 +2,7 @@
 template: post
 title: First Post
 slug: /posts/first-post
-draft: true
+draft: false
 date: 2019-07-25T12:09:40.901Z
 description: In which I wax eloquently.
 category: General

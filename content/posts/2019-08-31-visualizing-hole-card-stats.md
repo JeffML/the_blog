@@ -1,7 +1,7 @@
 ---
 template: post
 title: Visualizing Hole Card Stats
-slug: holecardmap
+slug: /posts/holecardmap
 draft: true
 date: 2019-08-31T15:48:23.813Z
 description: >-

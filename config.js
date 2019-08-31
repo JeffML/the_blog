@@ -30,7 +30,7 @@ module.exports = {
   author: {
     name: 'Jeff Lowery',
     photo: '/photo1.jpg',
-    bio: 'Longtime IT pro with a lovely wife, above-average kids, and obnoxious cats.',
+    bio: 'I am a longtime IT professional with varied interests.',
     contacts: {
       email: 'jeff@jeffamabob.com',
       twitter: 'jmlowery',

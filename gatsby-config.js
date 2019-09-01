@@ -1,7 +1,7 @@
 'use strict';
 
 const siteConfig = require('./config.js');
-const postCssPlugins = require('./postcss-config.js'); 
+const postCssPlugins = require('./postcss-config.js');
 
 module.exports = {
   pathPrefix: siteConfig.pathPrefix,
@@ -85,7 +85,8 @@ module.exports = {
                 }
               }
             `,
-          output: '/rss.xml'
+          output: '/rss.xml',
+          title: siteConfig.title  // fix for "bug" @https://github.com/gatsbyjs/gatsby/issues/17100
         }]
       }
     },

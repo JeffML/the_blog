@@ -29,29 +29,46 @@ Since each set of statistics are inconveniently embedded in HTML, I had two opti
 
 Since the stats bore a copyright notice, I asked which method the Professor would prefer, and he was okay with option 2.  The regex wasn't too hard to write, and so I wound up with JSON like the following:
 
-<gist here>
+```js
+const arry = [
+  { pair: 'AA', wins: '84.97	 ', ties: '0.57	' },
+  { pair: 'KK', wins: '82.10	 ', ties: '0.58	' },
+  { pair: 'QQ', wins: '79.63	 ', ties: '0.61	' },
+  { pair: 'JJ', wins: '77.16	 ', ties: '0.65	' },
+  { pair: 'TT', wins: '74.66	 ', ties: '0.72	' },
+  { pair: '99', wins: '71.69	 ', ties: '0.80	' },
+  { pair: '88', wins: '68.72	 ', ties: '0.91	' },
+  { pair: '77', wins: '65.72	 ', ties: '1.04	' },
+  { pair: 'KAs', wins: '65.28	 ', ties: '2.66	' },
+  { pair: 'QAs', wins: '64.41	 ', ties: '2.78	' },...
+```
 
-This still wasn't in the proper format for the head map API, but few lines of code took care of that
-
-<gist here>
+This still wasn't in the proper format for the head map API, but [few lines of code](https://github.com/JeffML/pokermap/blob/master/src/datasets/dsParser.js) took care of that.
 
 Now all was ready.
 
 ## The heat map API
 
 The jsheatmap package was written in TypeScript, and takes the following constructor parameters:
+```ts
+type labeledValuesType = [string, number[]]
 
-<gist here>
+class Sterno {
+  headings: Array<string>
+  rows: Array<labeledValuesType>
 
-When the method getData() is called, what is returned is a data structure that shows how the raw input data was scaled, and what the corresponding color gradient will be for each scaled value.
+  constructor(headings: string[], rows: Array<labeledValuesType>) {...
+```
 
-<gist here>
+There is also a method `getData()` that when called, will return a data structure that shows how the raw input data was scaled, and what the corresponding color gradient will be for each scaled value:
+
+`gist:6b9471e70dfe191a8ba692096ec770d3`
 
 Now all that is left is to present the map data in a pleasing format.
 
 ## The React application
 
-I alway state up front that I am not a web designer (on account of an aesthetics disability) so in this case I will use an HTML table to display there results.
+Although [create-react-app](https://create-react-app.dev/) is overkill for this example, it is still the quickest way I've found to get a react application up and running. After the script is done running, I just edit the code that was generated.
 
 The first thing I want to do is to add some user interactivity by way of radio buttons and check boxes. There are three things the user can specify:
 
@@ -59,11 +76,11 @@ The first thing I want to do is to add some user interactivity by way of radio b
 2. suited or unsuited hole cards
 3. whether to include ties
 
-I talked about the effect of number of players before. If hole cards are suited (both are hearts, for example), then winning odds increase a small amount. Ties are when pots are split because two or more players have the same rank of cards in their 5-card hand (their two hole cards plus three of the five community cards).
+I've mentioned the effect of number of players. If hole cards are suited (both are hearts, for example), then winning odds increase a small amount. Ties are when pots are split because two or more players have the same rank of cards in their 5-card hand (their two hole cards plus three of the five community cards).
 
 Several screenshots follow:
 
-`<screnshots here>`
+\`<screnshots here>\`
 
 ## What the heat map makes noticeable
 
@@ -75,4 +92,4 @@ Suited hole cards have more of an effect when there are more players
 
 ## Conclusion
 
-I think this post has demonstrated that even a simple heat map can be useful for finding patterns and correlations in large amounts of data. Feel free to explore the source code for both **jsheatmap** and **pokermap**.
+I think this post has demonstrated that even a simple heat map can be useful for finding patterns and correlations in large amounts of data. Feel free to explore the source code for both \*\*jsheatmap\*\* and \*\*pokermap\*\*.

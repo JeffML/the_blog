@@ -10,21 +10,22 @@ description: >-
 category: Heat Maps
 tags:
   - heat map
+  - poker
 ---
-You are probably familiar with [Texas Holdem](https://en.wikipedia.org/wiki/Texas_hold_%27em), a variant of poker where two cards, known as hole cards, are dealt face down to each player, and then five community cards are dealt face up in three stages, for a total of four stages in all.  At each stage, players have the opportunity to bet or raise.
+You are probably familiar with [Texas Holdem](https://en.wikipedia.org/wiki/Texas_hold_%27em), a variant of poker where two cards, known as hole cards, are dealt face down to each player, and then five community cards are dealt face up in three stages, for a total of four stages in all.  After each stage, players have the opportunity to bet or raise.
 
-If you're dealt two hole cards before the flop, what are your chances of winning? If you know, you can bet accordingly (although it should be said that there are another of other factors that influence betting, including judging whether any opponent is bluffing or not). 
+Let's say you're dealt two hole cards.  Before the flop is dealt, what are your chances of winning?  Know this and you can bet, or plan to bet, accordingly.
 
-Professor Apu Kapadia took a statistical approach and ran 4 billion simulated of poker games to determine the outcomes.  The results are lists of winning percentages based on number of players, from two to ten. And while each list is very informative, there are 169 rows of data in each of them.  It's hard to see a pattern in numbers, other than showing high ranking hole cards do better than lower ranking hole cards.
+[Professor Apu Kapadia](https://cs.indiana.edu/~kapadia/index.html)  of Indiana University took a statistical approach to analyzing this by running 4 billion simulated games of poker to determine the outcomes.  [Several 169-row lists were the result](https://cs.indiana.edu/~kapadia/nofoldem/), showing winning percentages based on number of players, from two to ten. Though each list is very informative, with that may rows it can be hard to see any pattern in the numbers, other than showing high ranking hole cards win more often than low ranking hole cards.
 
-I wrote a simple heat map application which I wrote a bit about for freeCodeCamp. Looking for a practical use, I ran across Dr. Kapadia's statistics and they were perfect for this demonstration.
+Awhile back I created a [simple heat map package](https://www.npmjs.com/package/jsheatmap). Looking for a practical use, I ran across Dr. Kapadia's statistics and they were a perfect for a demonstration.
 
 ## Massaging the statistics
 
-The statistic are in HTML; I had two options:
+Since each set of statistics are inconveniently embedded in HTML, I had two options:
 
-1. screen-scrape the data from the Document Object Model using Cheerio.  
-2. try to cut and paste the stats on the rendered HTML page into a file, then convert that to JSON format using some regex magic.
+1. screen-scrape the data from the rendered Document Object Model using [Cheerio](https://github.com/cheeriojs/cheerio) or equivalent;
+2. cut and paste the stats on the rendered HTML page into a file, then convert that to JSON format using some regex magic
 
 Since the stats bore a copyright notice, I asked which method the Professor would prefer, and he was okay with option 2.  The regex wasn't too hard to write, and so I wound up with JSON like the following:
 

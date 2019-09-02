@@ -2,7 +2,7 @@
 template: post
 title: Visualizing Hole Card Stats
 slug: /posts/holecardmap
-draft: true
+draft: false
 date: 2019-08-31T15:48:23.813Z
 description: >-
   With a heat map, it is possible to look at Texas Holdem pre-flop hole card
@@ -12,6 +12,8 @@ tags:
   - heat map
   - poker
 ---
+![](/media/fav.jpeg "An ace in the hole")
+
 You are probably familiar with [Texas Holdem](https://en.wikipedia.org/wiki/Texas_hold_%27em), a variant of poker where two cards, known as hole cards, are dealt face down to each player, and then five community cards are dealt face up in three stages, for a total of four stages in all.  After each stage, players have the opportunity to bet or raise.
 
 Let's say you're dealt two hole cards.  Before the flop is dealt, what are your chances of winning?  Know this and you can bet, or plan to bet, accordingly.
@@ -83,11 +85,7 @@ Several screenshots follow:
 
 ![](/media/screenshot-2019-09-02-at-3.23.40-pm.png "2 players, unsuited, no ties")
 
-
-
 ![](/media/screenshot-2019-09-02-at-3.25.27-pm.png "5 players, suited, with ties")
-
-
 
 ![](/media/screenshot-2019-09-02-at-3.27.48-pm.png "10 players, no ties, suited")
 

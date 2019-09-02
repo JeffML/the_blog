@@ -2,7 +2,7 @@
 template: post
 title: Visualizing Hole Card Stats
 slug: /posts/holecardmap
-draft: true
+draft: false
 date: 2019-08-31T15:48:23.813Z
 description: >-
   With a heat map, it is possible to look at Texas Holdem pre-flop hole card

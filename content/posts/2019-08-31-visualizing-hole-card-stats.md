@@ -50,6 +50,7 @@ Now all was ready.
 ## The heat map API
 
 The jsheatmap package was written in TypeScript, and takes the following constructor parameters:
+
 ```ts
 type labeledValuesType = [string, number[]]
 
@@ -80,16 +81,32 @@ I've mentioned the effect of number of players. If hole cards are suited (both a
 
 Several screenshots follow:
 
-\`<screnshots here>\`
+![](/media/screenshot-2019-09-02-at-3.23.40-pm.png "2 players, unsuited, no ties")
+
+
+
+![](/media/screenshot-2019-09-02-at-3.25.27-pm.png "5 players, suited, with ties")
+
+
+
+![](/media/screenshot-2019-09-02-at-3.27.48-pm.png "10 players, no ties, suited")
 
 ## What the heat map makes noticeable
 
-More players lessen the odds
+You can verify the following at [https://pokermap.netlify.com](https://pokermap.netlify.com/)
 
-Low ranking pairs don't help much
+**More players lessen the odds**
 
-Suited hole cards have more of an effect when there are more players
+With 2 players, there's a lot of green towards the upper left, indicating better odds for higher-ranking hole cards in a two-player game (about 50% for an A-2, about the same as a pair of 2's).  With 10 players,  is significantly worse that two 2's.
+
+**Low ranking pairs don't help much**
+
+With 10 players, a pair of 6's has about the same or less winning chances as any unpaired face card combination.
+
+**Suited hole cards have more of an effect when there are more players**
+
+K-Q unsuited in a 2 player game wins 59% of the time. Suited, the percentage increases only slightly to 61.6%.  In a 10-player game, unsuited K-Q as a 13.6% chance of winning, but this jumps to 17.1% when suited.  
 
 ## Conclusion
 
-I think this post has demonstrated that even a simple heat map can be useful for finding patterns and correlations in large amounts of data. Feel free to explore the source code for both \*\*jsheatmap\*\* and \*\*pokermap\*\*.
+I think this post has demonstrated that even a simple heat map can be useful for finding patterns and correlations in large amounts of data. Feel free to explore the source code for both [jsheatmap](https://github.com/JeffML/jsheatmap) and [pokermap](https://github.com/JeffML/pokermap) on github.

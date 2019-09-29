@@ -235,7 +235,9 @@ So I need to ensure that when I create a function for my addGames resolver to ca
 
 GraphQL Schema resolver attribute:
 
-```addGames(games: [GameInput]) : [Game]! @resolver(name: "add_games", paginated: false)```
+```
+addGames(games: [GameInput]) : [Game]! @resolver(name: "add_games", paginated: false)
+```
 
 And here's the function definition for add_games:
 
@@ -267,26 +269,59 @@ CreateFunction({
 
 I'm not an FQL expert (see acknowledgments), but I can tell that this code (from innermost outward):
 1. creates a header instance
-1. selects it generated reference
+1. selects its generated reference field "ref"
 1. merges that reference as field "header" into the a data object "X"
-1. "X" in this case representing one element of the input array parameter "games"
+1. "X" represents one element of the input array parameter "games" (GameInput)
 
+### A note about input types
+Mutation parameters require input types. In the previous mutations used  OpeningInput, HeaderInput and GameInput. I need to declare those in the GraphQL schema, otherwise when I import it via GraphQL Playground, it will fail validation.
 
+Input types for opening and game could be something like:
 
+```
+input OpeningInput {
+  fen: String!
+  SCID: String!
+  desc: String!
+}
 
- Knowing what they are and how they work are important if you want the mutation stored properly.
+input HeaderInput {
+  Event: String
+  Date: String!
+  White: String!
+  WhiteElo: String
+  Black: String!
+  BlackElo: String
+  ECO: String
+  Result: String
+}
 
-Fauna generated input types as well, which seems like a bonus, but as a user you can't use them.  The way schema import works is that it will validate _your_ schema, not the one Fauna generates.  If you didn't define the input type, your schema won't validate. Unfortunately, if you do define the input type and give it the same name as the one Fauna would generate for you, you "override" the type that would have been generated. Fauna recommends that in this case, you should name your input types in a way that doesn't override the generated one. 
+input GameInput {
+   header: HeaderInput! 
+   fens: [String!]!
+   opening: OpeningInput 
+ }
 
-## Humble opinion follows...
+``` 
 
-Fauna's support team and community forum members have been exceedingly helpful with questions and even offer help with implementation. They're forthcoming when onsite documentation is incomplete or wrong. 
+Here's the problem: these types override the Fauna-generated input types, because Fauna uses these names, too. It's recommended instead to choose non-conflicting names for input types, such as MyOpeningInput or MyGameInput so there's no risk of conflict with the input types used by the generated mutations (createGame and createOpening):
 
-Probably the biggest hurdle to face is that in order to write resolvers, you will need to know FQL. I'll be candid and say that I am not a fan of FQL: it's low-level, verbose, repetitive, and nested, though it may appeal to functional programming mavens. It is possible to create functions and, with a deeper knowledge, one could probably build up a substantial library of helper methods to scale back the complexity.
+```
+  createOpening(data: OpeningInput!): Opening!
+  createGame(data: GameInput!): Game!
+```
 
-I also thought the database slow:  bulk insert of a 1000 small records executed matters of seconds.
+The sad fact is, you can't use these generated types in your own schema, because they are create _after_ the import of your schema, which needs to pass validation checks to be imported.
 
-Ultimately, though, I want more control, even if it means a more work writing every resolver and defining every database structure. Normally I am pretty lazy, but too much magic can be too much.
+## Where to go from here...
+
+Fauna's support team and community forum members have been exceedingly helpful with questions and have even offered help with implementing mutations. They're also forthcoming when onsite documentation is incomplete or wrong. 
+
+Performance wasn't great: the bulk insert of a 1000 small documents executed in matters of seconds, which is slow, but I suspect that the free version is not running in an optimized setup.
+
+Probably the biggest hurdle to face is that in order to write custom resolvers, it is necessary to master FQL. I consider FQL a low-level, rather verbose query  language. It is possible to create functions, and one could probably build up a substantial library of helper methods to scale back the complexity, but it's also "nesty". If you look back at the add_games FQL, you can see that with just two relations the nesting is quite deep. If you wanted to have a mutation that created multiple related Collection items in one go, it could be a nesting nightmare. I encourage you to read the documentation and decide for yourself.
+
+In the end, FaunaDB's strength (transaction isolation), is not applicable to what I want to do. I tried it because Netlify integrates it and there is early-stage support for GraphQL.  Also, it was free. I will definitely check on it in six months time and see how it is progressing.
 
 - - -
 

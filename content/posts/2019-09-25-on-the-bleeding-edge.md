@@ -13,6 +13,8 @@ tags:
   - netlify
   - graphql
 ---
+![](/media/vincent-van-zalinge-whrwb43vh9e-unsplash.jpg "Photo by Vincent van Zalinge on Unsplash")
+
 I have one or two projects I maintain on [Netlify](https://www.netlify.com/), in addition to hosting my blog there. It's really an easy platform to deploy to, and has features like a content management system (CMS) and support for lambda functions (by way of AWS).
 
 What I needed for my latest project, though, was a database. The only one that's currently "integrated" into Netlify is [FaunaDB](https://fauna.com/): a NoSQL, document-oriented database. It recently [boasted support for GraphQL](https://fauna.com/blog/the-worlds-best-serverless-database-now-with-native-graphql), which I consider a big plus. At no charge and with a simplified setup, why not try it? 
@@ -340,7 +342,7 @@ Fauna's support team and community forum members have been exceedingly helpful w
 
 Performance wasn't great: the bulk insert of a 1000 small documents executed in matters of seconds, which is slow. However I didn't use pagination in my resolvers, so that may make a significant difference. It is also possible that the GraphQL features are in a slower debuggable configuration.
 
-To write custom resolvers, it is necessary to master FQL. I'll be honest and state that is not a query language that I've taken a liking to, but experience is limited. Your mileage may vary. It just initially strikes me as verbose and "nesty".  For simple CRUD operations, it is fine.
+To write custom resolvers, it is necessary to master FQL. I'll be honest and state that is not a query language that I've taken a liking to, but my experience is limited and your mileage may vary. It initially strikes me as verbose and "nesty", though for simple CRUD operations it is fine.
 
 I chose to try Fauna not for what it can do, but for convenience. I may now go check out DynamoDB and see if it more to my liking.
 

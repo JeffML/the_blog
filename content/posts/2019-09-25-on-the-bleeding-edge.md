@@ -84,8 +84,6 @@ type Query {
 
 And FaunaDB will provide an implementation.
 
-
-
 ### lambda functions
 
 The original lambdas in [netlify-fauna-example](https://github.com/netlify/netlify-faunadb-example) speak FQL. To convert these to GraphQL requests, just use a fetch library such as node-fetch, and make HTTPS requests to the Fauna GraphQL endpoint using an client like the one included with [apollo-boost](https://levelup.gitconnected.com/giving-react-a-lift-with-apollo-boost-74c6ff32894d): 
@@ -138,7 +136,7 @@ The code above requests the FEN strings for all the openings in the Opening coll
 
 Fauna's GraphQL support is in a functional but still formative stage. One of the things I wanted to do was have batch insert ability so I wouldn't have to insert once opening at a time into the Opening collection. This mutation isn't created by Fauna automatically (though it is ticketed feature request), so I had to define a resolver for it. 
 
-Fauna has a @resolver directive that can be used on mutation definitions. It will direct Fauna to use a user-defined function. For a collection of simple types like Opening, the resolver FQL is pretty straightforward. 
+Fauna has a @resolver directive that can be used on mutation definitions. It will direct Fauna to use a user-defined function written in FQL; these can be written directly in the shell. For a collection of simple types like Opening, the resolver FQL is pretty straightforward. 
 
 First, I go to the FaunaDB Console Shell, and create the function `add_openings`:
 
@@ -149,14 +147,14 @@ CreateFunction({
     Lambda(
       ["openings"],
       Map(
-        Var("games"),
+        Var("openings"),
         Lambda("X", Create(Collection("Opening"), { data: Var("X") }))
       )
     )
   )
 ```
 
-Then I add a @resolver directive to my mutation definition in the schema I will import:
+Openings is an array, and the Map method executes Create call on each element.  I then add a @resolver directive to my mutation definition in the schema I will import (referred to as a **custom resolver**):
 
 ```
 type Mutation {
@@ -214,9 +212,15 @@ exports.handler = (event, context, callback) => {
 }
 ```
 
-Things get trickier when you use @relation or @embedded directives, though I have to say there is ample experience and help available on both the Community Forum and in the chat assistant when in the documentation. Let's take a look at updating a relation:
+## Fauna GraphQL's chicken and egg problem
 
-Here's the relation in my schema.  Note the directive:
+You'll notice in the mutation above that I refer to the OpeningInput type.  In order for me to import my schema into Fauna, that type has to be defined.  But... when I imported Opening, Fauna auto-generated that type for me.  When I define it in my schema later (for the mutation), I essentially override that type. Since that generated type is used in generated mutations (ie., createOpening, singular),  by overriding that type definition in my own schema I could possibly break one of the generated mutations. 
+
+The solution suggested is to not override the OpeningInput type, but to rename my input type to something like MyOpeningInput. That ensures that my import schema validates, and doesn't mess with what the generated mutations expect.
+
+The problem gets messier, though, when you use the [@relation](https://fauna.com/blog/getting-started-with-graphql-part-2-relations) directive. That directive generates types that are used to relate two other type instances. 
+
+Here's the relation in my import schema.  Note the directive:
 
 ```
 type Game {
@@ -237,11 +241,57 @@ type Header {
 }
 ```
 
-In order to store a Game, I need to have also a Header (Opening is not required). So I have two collections that are related by a generated ref attribute like the one seen earlier for Opening. 
+In order to store a Game, I need to have also a required Header (Opening is not required). The relation is maintained by a Fauna-generated **ref** field on the Header. The way this is defined for the mutation is through the use of a GameHeaderRelation type that allows the creation of both Game and Header in a single mutation. Here are the relevant generated types:
 
-So I need to ensure that when I create a function for my addGames resolver to call, there has to be a Header created first. 
+```
+input GameHeaderRelation {
+  create: HeaderInput
+  connect: ID
+}
 
-GraphQL Schema resolver attribute:
+input GameInput {
+  header: GameHeaderRelation
+  fens: [String!]!
+  opening: GameOpeningRelation
+}
+
+type Mutation {
+  createGame(data: GameInput!): Game!
+}
+```
+
+Now to add a game with the required header info, I can call the mutation like so, from within the Playground:
+
+```
+mutation CreateGameWithHeader {
+    createGame(data: {
+        fens: [],
+        header: { 
+           create: {
+           date: "2004.10.16", 
+           white: "Morozevich, Alexander", 
+           ...} ) {
+        _id
+        fens
+        header {
+          data {
+            date
+            white
+          }
+        }
+    }
+}
+```
+
+However if I want to create a batch upload mutation of games, I don't have access to the generated **GameHeaderRelation** type, or the other input types. Without those defined, my import schema won't validate if I try to use them in my bulk mutation definition. To reiterate: bulk mutations are a ticketed feature request, so they should be available soon. Yet this type of issue will arise regarding any custom resolver's use of types.
+
+I though for a minute that the solution would be to download the generate schema (from Playground), then modify it with my bulk mutations.  However, I am _overriding_ **__**the otherwise-generated types on import, which is not what I want to happen.
+
+### The workaround: write the resolver FQL
+
+As stated, I need to ensure that when I create a function for my addGames resolver to call, there has to be a Header created first for each game.
+
+The GraphQL Schema resolver attribute calls the FQL add_games function:
 
 ```
 addGames(games: [GameInput]) : [Game]! @resolver(name: "add_games", paginated: false)
@@ -275,65 +325,52 @@ CreateFunction({
 }
 ```
 
-I'm not an FQL expert (see acknowledgments), but I can tell that this code (from innermost outward):
+I'm not an FQL expert (see acknowledgments), but this code is readable (from innermost outward):
 
 1. creates a header instance
 2. selects its generated reference field "ref"
 3. merges that reference as field "header" into the a data object "X"
 4. "X" represents one element of the input array parameter "games" (GameInput)
 
-### A note about input types
-
-Mutation parameters require input types. In the previous mutations used  OpeningInput, HeaderInput and GameInput. I need to declare those in the GraphQL schema, otherwise when I import it via GraphQL Playground, it will fail validation.
-
-Input types for opening and game could be something like:
-
-```
-input OpeningInput {
-  fen: String!
-  SCID: String!
-  desc: String!
-}
-
-input HeaderInput {
-  Event: String
-  Date: String!
-  White: String!
-  WhiteElo: String
-  Black: String!
-  BlackElo: String
-  ECO: String
-  Result: String
-}
-
-input GameInput {
-   header: HeaderInput! 
-   fens: [String!]!
-   opening: OpeningInput 
- }
-```
-
-Here's the problem: these types override the Fauna-generated input types, because Fauna uses these names, too. It's recommended instead to choose non-conflicting names for input types, such as MyOpeningInput or MyGameInput so there's no risk of conflict with the input types used by the generated mutations (createGame and createOpening):
-
-```
-  createOpening(data: OpeningInput!): Opening!
-  createGame(data: GameInput!): Game!
-```
-
-The sad fact is, you can't use these generated types in your own schema, because they are create _after_ the import of your schema, which needs to pass validation checks to be imported.
+I should note that one of Fauna's engineers stated that maintaining references _by hand_ is "tricky".  It requires  understanding of what is going on beneath the covers. The [@embedded](https://docs.fauna.com/fauna/current/api/graphql/directives/d_embedded) type of relation may be easier to implement in FQL if the relation is one-to-one, as in this case.
 
 ## Where to go from here...
 
-Fauna's support team and community forum members have been exceedingly helpful with questions and have even offered help with implementing mutations. They're also forthcoming when onsite documentation is incomplete or wrong. 
+Fauna's support team and community forum members have been exceedingly helpful with questions and have even offered help with implementing FQL functions. They're also forthcoming when onsite documentation is incomplete or wrong. 
 
-Performance wasn't great: the bulk insert of a 1000 small documents executed in matters of seconds, which is slow, but I suspect that the free version is not running in an optimized setup.
+Performance wasn't great: the bulk insert of a 1000 small documents executed in matters of seconds, which is slow. However I didn't use pagination in my resolvers, so that may make a significant difference. It is also possible that the GraphQL features are in a slower debuggable configuration.
 
-Probably the biggest hurdle to face is that in order to write custom resolvers, it is necessary to master FQL. I consider FQL a low-level, rather verbose query  language. It is possible to create functions, and one could probably build up a substantial library of helper methods to scale back the complexity, but it's also "nesty". If you look back at the add_games FQL, you can see that with just two relations the nesting is quite deep. If you wanted to have a mutation that created multiple related Collection items in one go, it could be a nesting nightmare. I encourage you to read the documentation and decide for yourself.
+To write custom resolvers, it is necessary to master FQL. I'll be honest and state that is not a query language that I've taken a liking to, but experience is limited. Your mileage may vary. It just initially strikes me as verbose and "nesty".  For simple CRUD operations, it is fine.
 
-In the end, FaunaDB's strength (transaction isolation), is not applicable to what I want to do. I tried it because Netlify integrates it and there is early-stage support for GraphQL.  Also, it was free. I will definitely check on it in six months time and see how it is progressing.
+I chose to try Fauna not for what it can do, but for convenience. I may now go check out DynamoDB and see if it more to my liking.
+
+**Acknowledgements**
+
+I'd like to thank Summer Schrader, Chris Biscardi, and Leo Regnier for their patience and insight.
 
 - - -
 
-\* My life isn't interesting enough, so when I clone a project like netlify-fauna-example, I will run `npm update outdated` and `npm audit fix`. I can expect to encounter issues when I do this, but in practice I usually resolve them in an hour or two. 
+\* My life isn't interesting enough, so when I clone a project like netlify-fauna-example, I will run `npm update outdated` and `npm audit fix`. I can expect to encounter issues when I do this, but in practice I usually resolve them in an hour or two.
 
-Not this time.  I deleted node_modules, package-lock.json, and even did a forced clean of the cache before reinstalling everything. Didn't work. I eventually switched over to yarn, deleted the above (but left the updated version info in package.json alone) and installed. After a few hiccups, success!
+Not this time.  I deleted node_modules, package-lock.json, and even did a forced clean of the cache before reinstalling everything. Didn't work. I eventually switched over to yarn, deleted the above (but left the updated version info in package.json alone) and installed. After a few hiccups, success!  Here are the dependency versions I would up with:
+
+```
+  "dependencies": {
+    "apollo-boost": "^0.4.4",
+    "chess.js": "^0.10.2",
+    "encoding": "^0.1.12",
+    "faunadb": "^2.8.0",
+    "graphql": "^14.5.7",
+    "graphql-tag": "^2.10.1",
+    "node-fetch": "^2.6.0",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
+    "react-scripts": "^3.1.1"
+  },
+  "devDependencies": {
+    "http-proxy-middleware": "^0.20.0",
+    "markdown-magic": "^1.0.0",
+    "netlify-lambda": "^1.6.3",
+    "npm-run-all": "^4.1.5"
+  },
+```

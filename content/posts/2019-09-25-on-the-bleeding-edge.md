@@ -2,7 +2,7 @@
 template: post
 title: My take on FaunaDB and their GraphQL support
 slug: /posts/bleeding-edge
-draft: true
+draft: false
 date: 2019-09-25T22:16:22.378Z
 description: >-
   FaunaDB has functional support for GraphQL-based APIs. There's still some work

@@ -206,7 +206,75 @@ exports.handler = (event, context, callback) => {
 }
 ```
 
-Things get trickier when you use directives such as @relation or @embedded. Remember I mentioned that Fauna created additional types once you're uploaded a GraphQL schema? **There's also collections backing those types.** Knowing what they are and how they work are important if you want the mutation stored properly.
+Things get trickier when you use directives such as @relation or @embedded directives, though I have to say there is ample experience and help available on both the Community Forum and in the chat assistant when in the documentation. Let's take a look at updating a relation:
+
+Here's the relation in my schema.  Note the directive:
+
+```
+type Game {
+  header: Header! @relation
+  fens: [String!]!
+  opening: Opening @relation
+}
+
+type Header {
+    Event: String
+    Date: String!
+    White: String!
+    WhiteElo: String
+    Black: String!
+    BlackElo: String
+    ECO: String
+    Result: String
+}
+```
+
+In order to store a Game, I need to have also a Header (Opening is not required). So I have two collections that are related by a generated ref attribute like the one seen earlier for Opening. 
+
+So I need to ensure that when I create a function for my addGames resolver to call, there has to be a Header created first. 
+
+GraphQL Schema resolver attribute:
+
+```addGames(games: [GameInput]) : [Game]! @resolver(name: "add_games", paginated: false)```
+
+And here's the function definition for add_games:
+
+```
+CreateFunction({
+  name: "add_games",
+  body: Query(
+    Lambda(
+      ["games"],
+      Map(
+        Var("games"),
+        Lambda("X", [
+          Create(Collection("Game"), {
+            data: Merge(Var("X"), {
+              header: Select(
+                ["ref"],
+                Create(Collection("Header"), {
+                  data: Select(["header"], Var("X"))
+                })
+              )
+            })
+          })
+        ])
+      )
+    )
+  )
+}
+```
+
+I'm not an FQL expert (see acknowledgments), but I can tell that this code (from innermost outward):
+1. creates a header instance
+1. selects it generated reference
+1. merges that reference as field "header" into the a data object "X"
+1. "X" in this case representing one element of the input array parameter "games"
+
+
+
+
+ Knowing what they are and how they work are important if you want the mutation stored properly.
 
 Fauna generated input types as well, which seems like a bonus, but as a user you can't use them.  The way schema import works is that it will validate _your_ schema, not the one Fauna generates.  If you didn't define the input type, your schema won't validate. Unfortunately, if you do define the input type and give it the same name as the one Fauna would generate for you, you "override" the type that would have been generated. Fauna recommends that in this case, you should name your input types in a way that doesn't override the generated one. 
 

@@ -11,7 +11,22 @@ tags:
   - Lambda
   - Firebase
 ---
-Awhile back a was exploring Netlify's support for FaunaDB, which is a NoSQL document-oriented database with some special features to handle transactions across dispersed database servers. I wasn't interested in that, but it was a convenient choice, since there was example code I could start with.  In the end, I felt the GraphQL support wasn't ripe yet, so I looked around for alternatives.
+
+[Awhile back](https://www.freecodecamp.org/news/how-to-use-faunadb/) a was exploring [Netlify's support for FaunaDB](https://www.netlify.com/blog/2019/09/10/announcing-the-faunadb-add-on-for-netlify/), which is a NoSQL document-oriented database with some special features to [handle transactions across dispersed database servers](https://fauna.com/blog/consistency-without-clocks-faunadb-transaction-protocol). I decided to try it because it was a convenient choice, since there was [example code](https://github.com/netlify/netlify-faunadb-example) I could start with.  The example used lambda functions as a frontend to the database. 
+
+![fauna with lambda](https://user-images.githubusercontent.com/532272/42067494-5c4c2b94-7afb-11e8-91b4-0bef66d85584.png)
+
+I modified the lambda functions to talk to the FaunaDB GraphQL API. While [that worked](https://www.freecodecamp.org/news/how-to-use-faunadb/), in the end I felt Fauna's GraphQL support wasn't quite ripe yet, so I looked around for alternatives.
+
+I settled on [Cloud Firestore](https://firebase.google.com/docs/firestore/rtdb-vs-firestore). I based this new project on the Fauna example, swapping out the FaunaDB module with [apollo-server-lambda](https://www.npmjs.com/package/apollo-server-lambda), so that I can write my own GraphQL API and resolvers. One of the refinements I had to make was to push all my Netlify Function dependencies down to the /functions folder in my project (separate from the /src folder that contains my React client). To do this, I ran `npm init` while inside the functions folder, moved dependencies from the top-level package.json to the new /functions/package.json, and then ran `yarn install` to pull the packages into a new node_modules folder. The result was this:
+
+![](/media/screenshot-2019-10-18-at-1.06.47-pm.png "The functions folder")
+
+I'll talk about the subfolders later; the main thing to notice is that there's yarn files plus package.json, a node_modules folder, a schema folder, and some .js files for testing.
+
+The original project used netlify_lambda to build, using webpack and babel. I ran into some issues, fixed them, then ran into them again later. Rather than put up with the frustration, I decide to forego neltify lambda and chose Netlify Dev to build and deploy from the command line. The drawback was that I didn't have a local server, but I could deploy candidates to Netlify and test them without checking into github or deploying to production. The advantage was that there were less moving parts, since webpack and babel were no longer needed.
+
+ 
 
 The FaunaDB example used Netlify Functions, which are built on top of AWS Lambda. I decided to follow that template when working with FireBase. Authentication of the client was different, though. Both FaunaDB and Firebase used an well-known environment variable for authentication. In Fauna's case, it was a simple token, but for Firebase it was a path reference to a generated certificate file. That in turn was read by each Firebase instance automatically. 
 

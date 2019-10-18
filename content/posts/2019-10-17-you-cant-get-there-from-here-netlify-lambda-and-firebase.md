@@ -2,7 +2,7 @@
 template: post
 title: 'You can''t get there from here: Netlify Lambda and Firebase'
 slug: /posts/firebase
-draft: true
+draft: false
 date: 2019-10-17T22:25:46.582Z
 description: When traipsing the bleeding edge you discover the undocumented things.
 category: Technical

@@ -32,10 +32,66 @@ To use this in your build process, you create a build step in JavaScript, then c
 
 \[netlify.toml]
 
- 
+## netlify-lambda
 
-
-
-continuous deployment
+## continuous deployment
 
 ## Netlify Dev
+
+This is Netlifys CLI tool.  There are two main deployment options:  netlify deploy, which deploys to a Netlify server; and netlify dev, which deploys locally.  It requires a build step before deployment. 
+
+Of the four, I find Netlify Dev the easiest to understand and use.  Note that if you use netlify function:create for your lambdas, the resulting folder structure will not be compatible with continuous deployment. Choose your poison wisely.
+
+# The Project
+
+First, you need to set up a Firebase account. Once done, you can download a credentials file in JSON format. I've attached a link to example source at the end of this post, but it will not run until you replace  the fake credentials file (fakecreds.json) with your real one.
+
+## Creating the lambda function
+
+I like Apollo's GraphQL libraries, but be aware that they are evolving rapidly.  For the lambda function, I used apollo-server-lambda to server up the GraphQL API.
+
+The hangup I had previously was solved by using a different NPM package, firebase-admin, thus affirming the dictum: "There's always node module for it".  Finding the one that works can be a challenge, though.
+
+With firebase-admin I can import the credentials file, rather than pass a useless path to it via environment variable as before with firebase.js. 
+
+\[code snippet]
+
+Now I create the lambda function using Netlify Dev (not \`netlify dev\`-- so confusing!): 
+
+\`netlify create:function my-lambda\`
+
+It will give me a bunch of prompts.  I want to use apollo-server-lambda, which is one of the prompts.
+
+## Creating the client
+
+Naturally I want to use apollo-client (in for a dime, in for a dollar as the saying goes). The easiest way I've found is to use create-react-app, and \[apollo-boost] to get a skeletal client up and running quickly.  Once this is done, I create a React component to trigger a call to my lambda, using the GraphQL API it provides.
+
+\[code snippet]
+
+And the response I'll show in a window alert box:
+
+\[image]
+
+## Added bonus!
+
+Since I used apollo-server-lambda as a basis for the Netlify Function, I can go directly to the service endpoint via URL and it will bring up GraphQL Playground:
+
+\[image]
+
+Here I can test queries and mutations prior to embedding them in my React client code.
+
+**Also**, when using \`netlify dev\` I have a hot server courtesy of create-react-app, so I can see result of code changes in "real" time. 
+
+# Deployment
+
+As I mentioned, there are several ways of deploying, but my preference is:
+
+1. netlify dev for work-in-progress (local server)
+
+2. yarn build to build the project; then netlify deploy to deploy it to a temporary netlify server
+
+3. finally, netlify deploy --prod to deploy to my production server
+
+----
+
+That's it!  Here's a link to source.

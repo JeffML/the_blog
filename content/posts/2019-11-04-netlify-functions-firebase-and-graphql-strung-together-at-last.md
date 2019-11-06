@@ -15,6 +15,8 @@ tags:
   - GraphQL
   - Apollo
 ---
+![](/media/levi-guzman-zdsoe8za6hs-unsplash.jpg "Togetherness")
+
 In a [previous post](https://www.freecodecamp.org/news/you-cant-get-there-from-here-how-netlify-lambda-and-firebase-led-me-to-a-serverless-dead-end/) I confessed defeat in attempting to get an [AWS Lambda](https://www.netlify.com/products/functions/) GraphQL server to connect to a [Firebase](https://firebase.google.com/docs) server.  I didn't give up right away, though, and a short time later found a [different Node package](https://www.npmjs.com/package/firebase-admin) to achieve what I couldn't before.
 
 Why use AWS Lambda to host a GraphQL server?  Scalability would be the obvious reason, but I did it to learn.

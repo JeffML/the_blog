@@ -29,7 +29,7 @@ There are several ways to deploy a project using Netlify:
 
 This is [a utility](https://github.com/netlify/zip-it-and-ship-it) that works a lot like [webpack](https://webpack.js.org/): for each function, it creates an archive file which bundles the function along with its dependencies.  Like webpack, it only pulls in dependencies that are actually required by the function. 
 
-Netlify expects /functions folder by convention. When writing new functions, its source is at the same level as any NodeJS modules it needs as dependencies. If you add a new function that has new module dependencies, then they go into the node_modules folder (using `yarn add` or npm` install --save`). 
+Netlify expects /functions folder by convention. When writing new functions, its source is at the same level as any NodeJS modules it needs as dependencies. If you add a new function that has new module dependencies, then they go into the node_modules folder (using `yarn add` or npm`install --save`). 
 
 The following shows two lambda functions along with a single node_modules folder:
 
@@ -97,13 +97,15 @@ Being a geek, I'm building a database of chess openings. I have an openings book
 
 ## Creating the lambda function
 
-I used apollo-server-lambda add a GraphQL API frontend to the Firestore database. To talk to Firestore, I use firebase-admin. I can get a start on generating this function using `netlify function:create`. It will ask me what template I want to use for the lambda function; the correct choice is in blue:
+I used [apollo-server-lambda](https://github.com/apollographql/apollo-server/tree/master/packages/apollo-server-lambda) add a GraphQL API frontend to the Firestore database. To talk to Firestore, I use [firebase-admin](https://www.npmjs.com/package/firebase-admin). When using `netlify function:create` to create your function,  it will ask what template  to use; in this case, the correct choice is in blue:
 
 ![](/media/screenshot-2019-11-05-at-4.39.37-pm.png)
 
-In addition, I will add some utility functions, the firebase-admin dependency, and supporting GraphQL schema and resolvers.
+In addition, I have added some utility functions and supporting GraphQL schema and resolvers.
 
-**The lambda function**
+### The lambda function
+
+The core of the whole operation is in `/functions/pgnfen.js`. It creates the server, logs into firebase, makes the necessary GraphQL declarations, and finally invokes the handler function that receives requests from the client and passes them on to the database via GraphQL resolvers:
 
 ```js
 /* eslint-disable no-unused-vars */
@@ -148,7 +150,9 @@ exports.handler = server.createHandler(
 );
 ```
 
-**The Schema**
+### The Schema
+
+The schema defines the GraphQL API. 'Nuf said.
 
 ```
 const typeDefs = `
@@ -161,7 +165,9 @@ type Mutation {
 module.exports = typeDefs;
 ```
 
-**The resolver**
+### The resolver
+
+This resolves the GraphQL addOpenings mutation into Firestore queries (batched, in this case), then sends back a count of documents submitted (if successful):
 
 ```
 const openings = require('./scid.js');
@@ -187,7 +193,9 @@ const addOpenings = async (_, { start, end }, { admin }) => {
 module.exports = {  addOpenings };
 ```
 
-**The opening book**
+### The opening book
+
+The JSON version of the opening book consists of an SCID (an opening identifier based on [ECO](https://www.365chess.com/eco.php)), as well as the opening name and its [FEN](https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation). Each one becomes a document in the database.
 
 ```
 /* eslint-disable comma-dangle */
@@ -207,41 +215,19 @@ module.exports = [
     desc: '"Kadas Opening"',
     fen: 'rnbqkbnr/pppppppp/8/8/7P/8/PPPPPPP1/RNBQKBNR b KQkq h3 0 1'
   },
-  {
-    SCID: 'A00d',
-    desc: '"Clemenz Opening"',
-    fen: 'rnbqkbnr/pppppppp/8/8/8/7P/PPPPPPP1/RNBQKBNR b KQkq - 0 1'
-  },
-  {
-    SCID: 'A00e',
-    desc: '"Ware Opening"',
-    fen: 'rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq a3 0 1'
-  },
-  {
-    SCID: 'A00f',
-    desc: '"Anderssen Opening"',
-    fen: 'rnbqkbnr/pppppppp/8/8/8/P7/1PPPPPPP/RNBQKBNR b KQkq - 0 1'
-  },
-  {
-    SCID: 'A00f',
-    desc: '"Creepy Crawly Opening (Basman)"',
-    fen: 'rnbqkbnr/ppp2ppp/8/3pp3/8/P6P/1PPPPPP1/RNBQKBNR w KQkq d6 0 3'
-  },
-  {
-    SCID: 'A00g',
-    desc: '"Amar/Paris Opening"',
-    fen: 'rnbqkbnr/pppppppp/8/8/8/7N/PPPPPPPP/RNBQKB1R b KQkq - 1 1'
-  },
+  ...
 ];
 ```
-
-- - -
 
 ## Creating the client
 
 I'm using apollo-client in the React application. The easiest way to do so is create-react-app, then toss in \[apollo-boost] to get a skeletal client up and running quickly.  Then create a React component to trigger a call to the lambda, using the GraphQL API it provides.
 
-The component will provide the start/end indices of the opening book to load, and a submit button. Here's a summarized version of the component:
+The component will provide the start/end indices of the opening book to load, and a submit button. 
+
+![](/media/screenshot-2019-11-06-at-1.54.54-pm.png "The submit component")
+
+Here's a condensed version of the component code:
 
 ```
 /* eslint-disable no-alert */
@@ -293,7 +279,7 @@ Row end:&nbsp;&nbsp;
 };
 ```
 
-And the response will show in a window alert box:
+And the mutation response will show in a window alert box:
 
 ![](/media/screenshot-2019-11-06-at-11.50.01-am.png "Alert box with document written noted")
 

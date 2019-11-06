@@ -2,7 +2,7 @@
 template: post
 title: 'Netlify Functions, Firebase, and GraphQL: working together at last!'
 slug: /posts/netlify-firebase
-draft: true
+draft: false
 date: 2019-11-05T01:39:17.922Z
 description: >-
   It wasn't easy, but I finally have a Netlify hosted React app talking to a

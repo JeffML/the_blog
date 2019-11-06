@@ -1,6 +1,6 @@
 ---
 template: post
-title: 'Netlify Functions, Firebase, and GraphQL: strung together at last!'
+title: 'Netlify Functions, Firebase, and GraphQL: working together at last!'
 slug: /posts/netlify-firebase
 draft: true
 date: 2019-11-05T01:39:17.922Z
@@ -13,10 +13,9 @@ tags:
   - Netlify
   - lambda
   - GraphQL
+  - Apollo
 ---
-In a \[previous post] I confessed defeat in my attempt to get a GraphQL server, running inside a Netlify lambda function, to talk to a Firestore instance.  The roadblock was that the firebase.js package required a environment variable with a path to the Firebase credentials file.  That was used by the Firebase class instance to automatically read and then load the file at that path. Problem is, once the application is up and running, I was told no file system access allowed. 
-
-A short time later I found \[this technique], which allowed the credentials file to be passed in as a dependency. This works in Netlify Functions, because dependencies are bundled up with the lambda function, so that they are available to be loaded at runtime like any other dependency.  It's a subtle distinction: dependency loading vs file reading, but it worked, so I moved on.
+In a [previous post](https://www.freecodecamp.org/news/you-cant-get-there-from-here-how-netlify-lambda-and-firebase-led-me-to-a-serverless-dead-end/) I confessed defeat in attempting to get a lambda GraphQL server to connect a Firestore instance.  A short time later I found a different Node package to achieve what I couldn't before: it allowed the Firebase credentials file to be passed in as a JSON dependency.
 
 # But...
 
@@ -24,43 +23,202 @@ It turns out there are more to dependencies in Netlify Functions than are readil
 
 ## zip-it-and-ship-it
 
-This is a utility that works a lot like webpack:  it creates an archive file with your functions an all its dependencies.  Like webpack, it only pulls in dependencies that are actually used.  Here's an example:
+This is a utility that works a lot like webpack: for each function it creates an archive file along with all its dependencies.  Like webpack, it only pulls in dependencies that are actually required by the function. For instance:
 
-\[example of source]
+![](/media/screenshot-2019-11-05-at-3.45.48-pm.png "Source folder for lambda functions")
 
-To use this in your build process, you create a build step in JavaScript, then call it in your package.json to producde an output folder. The netlify.toml configutation would be set up to indicate that lambda functions are in the output folder:
+This has two lambda functions, plus a node_module folder for the module dependencies needed by the lambda functions. To use zip-it-and-ship-it, you write a simple JavaScript program to be called in the package.json's build scripts. That program defines the input folder (functions) and the output folder (say, functions_build).  Once run, you get several .zip files that can be deployed and run on Netlify. Those zip files contain a the function code as well as a node_modules folder that has only those dependencies needed by each function:
 
-\[netlify.toml]
+![](/media/screenshot-2019-11-05-at-3.52.56-pm.png "The function build output")
+
+The zip-it-and-ship-it mechanism is also involved in the following two processes:
 
 ## netlify-lambda
 
+You can read about netlify-lambda here. Under the covers, it's using zip-it-and-ship-it.
+
 ## continuous deployment
+
+The continuous deployment option is available if you're using one of the supported repositories, like github. Once you push changes to the repo, Netlify is notified and will run your build processes. This could involve zip-it-and-ship-it or netlify-lambda. You can also bypass both of those tools and Netlify will attempt to build the application examining the files, both .js and .json.
 
 ## Netlify Dev
 
-This is Netlifys CLI tool.  There are two main deployment options:  netlify deploy, which deploys to a Netlify server; and netlify dev, which deploys locally.  It requires a build step before deployment. 
+The newest deployment option on the block is the Netlify CLI, a.k.a. Netlify Dev. This encompasses two main deployment options, as well as script to create, build, and test functions. 
 
-Of the four, I find Netlify Dev the easiest to understand and use.  Note that if you use netlify function:create for your lambdas, the resulting folder structure will not be compatible with continuous deployment. Choose your poison wisely.
+`netlify deploy` will deploy to a Netlify server; it requires a build step prior to deployment.
 
-# The Project
+`netlify dev` creates a local server, along with a proxy to your lambda functions, and kicks off the application. It does not require a build step.
 
-First, you need to set up a Firebase account. Once done, you can download a credentials file in JSON format. I've attached a link to example source at the end of this post, but it will not run until you replace  the fake credentials file (fakecreds.json) with your real one.
+There is also a script to help you create your lambda functions: `netlify function:create`.  If you use this method, you will get a folder structure different from the one used by the previous deployment methods:
+
+![](/media/screenshot-2019-11-05-at-4.11.21-pm.png "Folder structure generated by `netlify function:create`")
+
+Each function has its own folder, along with a node_modules and package.json file (plus others not shown, such as .lock files). Similar to what would be in the .zip archives that zip-it-and-ship-it creates.
+
+Now, if you do generate your lambdas this way, continuous deployment will break, as it correctly attempts to build the lambda code without some assistance on your part. For instance, you may have to put something like this in your build script:
+
+```
+"build": "npm-run-all build:*",
+"build:app": "react-scripts build",
+"build:functions": "yarn --cwd functions/func1 install",
+"build:functions": "yarn --cwd functions/func2 install",
+```
+
+Which will install the dependencies needed by each lambda.
+
+For my projects, I'll be using the Netlify Dev CLI going forward.
+
+# The Example
+
+Your homework assignment is to set up a Netlify account and a Firebase account. You will also need to grab a Firebase credentials JSON file and put it somewhere in your project (the example uses fake-creds.json, which is FAKE). You need to be able to authenticate using Netlify Identity, as well.
+
+## About what this does
+
+I'm a kind of a chess nut, so for this example I'll load in a partial chess openings book (in JSON) into the firestore database. In this somewhat contrived example, the book is actually stored with the lambda function, but its loading is triggered by the React client through a GraphQL mutation call. 
 
 ## Creating the lambda function
 
-I like Apollo's GraphQL libraries, but be aware that they are evolving rapidly.  For the lambda function, I used apollo-server-lambda to server up the GraphQL API.
+For the lambda function, I used apollo-server-lambda to serve up the GraphQL API to the Firestore database. To talks to Firestore, I'll use firebase-admin. I can get a start on generating this function using `netlify function:create`. It will ask me what template I want to use for the lambda function; the correct choice is in blue:
 
-The hangup I had previously was solved by using a different NPM package, firebase-admin, thus affirming the dictum: "There's always node module for it".  Finding the one that works can be a challenge, though.
+![](/media/screenshot-2019-11-05-at-4.39.37-pm.png)
 
-With firebase-admin I can import the credentials file, rather than pass a useless path to it via environment variable as before with firebase.js. 
+In addition, I will add some utility functions, the firebase-admin dependency, and supporting GraphQL schema and resolvers.
 
-\[code snippet]
+**The lambda function**
 
-Now I create the lambda function using Netlify Dev (not \`netlify dev\`-- so confusing!): 
+```js
+/* eslint-disable no-unused-vars */
+const apolloLambda = require('apollo-server-lambda');
+const admin = require('firebase-admin');
+const typeDefs = require('./schema.gql');
+const { fetchGames, addOpenings } = require('./resolvers');
 
-\`netlify create:function my-lambda\`
+const {
+  ApolloServer,
+} = apolloLambda;
 
-It will give me a bunch of prompts.  I want to use apollo-server-lambda, which is one of the prompts.
+const credential = require('./fake-creds.json');
+
+
+admin.initializeApp({
+  credential: admin.credential.cert(credential),
+});
+
+
+const resolvers = {
+  Query: {
+    allGames: (root, args, context) => [], //TBD
+  },
+  Mutation: {
+    addOpenings: async (root, args, context) => addOpenings(root, args, { ...context, admin }),
+  },
+};
+
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+});
+
+exports.handler = server.createHandler(
+  {
+    cors: {
+      origin: '*',
+      credentials: true,
+    },
+  },
+);
+```
+
+**The Schema**
+
+```
+const typeDefs = `
+
+type Mutation {
+  addOpenings(start: Int!, end: Int!) : Int! 
+}
+`
+
+module.exports = typeDefs;
+```
+
+**The resolver**
+
+```
+const openings = require('./scid.js');
+
+
+const addOpenings = async (_, { start, end }, { admin }) => {
+  const db = admin.firestore();
+  const batch = db.batch();
+  const fens = db.collection('chess/openings/fen');
+  const data = openings.slice(start, end);
+
+  data.forEach((opening) => {
+    const id = opening.fen.replace(/\//g, '$');
+    const doc = fens.doc(id);
+    batch.set(doc, opening);
+  });
+
+  await batch.commit();
+
+  return data.length;
+};
+
+module.exports = {  addOpenings };
+```
+
+**The opening book**
+```
+/* eslint-disable comma-dangle */
+module.exports = [
+  {
+    SCID: 'A00b',
+    desc: '"Barnes Opening"',
+    fen: 'rnbqkbnr/pppppppp/8/8/8/5P2/PPPPP1PP/RNBQKBNR b KQkq - 0 1'
+  },
+  {
+    SCID: 'A00b',
+    desc: '"Fried fox"',
+    fen: 'rnbqkbnr/pppp1ppp/8/4p3/8/5P2/PPPPPKPP/RNBQ1BNR b kq - 1 2'
+  },
+  {
+    SCID: 'A00c',
+    desc: '"Kadas Opening"',
+    fen: 'rnbqkbnr/pppppppp/8/8/7P/8/PPPPPPP1/RNBQKBNR b KQkq h3 0 1'
+  },
+  {
+    SCID: 'A00d',
+    desc: '"Clemenz Opening"',
+    fen: 'rnbqkbnr/pppppppp/8/8/8/7P/PPPPPPP1/RNBQKBNR b KQkq - 0 1'
+  },
+  {
+    SCID: 'A00e',
+    desc: '"Ware Opening"',
+    fen: 'rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR b KQkq a3 0 1'
+  },
+  {
+    SCID: 'A00f',
+    desc: '"Anderssen Opening"',
+    fen: 'rnbqkbnr/pppppppp/8/8/8/P7/1PPPPPPP/RNBQKBNR b KQkq - 0 1'
+  },
+  {
+    SCID: 'A00f',
+    desc: '"Creepy Crawly Opening (Basman)"',
+    fen: 'rnbqkbnr/ppp2ppp/8/3pp3/8/P6P/1PPPPPP1/RNBQKBNR w KQkq d6 0 3'
+  },
+  {
+    SCID: 'A00g',
+    desc: '"Amar/Paris Opening"',
+    fen: 'rnbqkbnr/pppppppp/8/8/8/7N/PPPPPPPP/RNBQKB1R b KQkq - 1 1'
+  },
+];
+
+```
+
+
+****
+
 
 ## Creating the client
 
@@ -87,11 +245,9 @@ Here I can test queries and mutations prior to embedding them in my React client
 As I mentioned, there are several ways of deploying, but my preference is:
 
 1. netlify dev for work-in-progress (local server)
-
 2. yarn build to build the project; then netlify deploy to deploy it to a temporary netlify server
-
 3. finally, netlify deploy --prod to deploy to my production server
 
-----
+- - -
 
 That's it!  Here's a link to source.

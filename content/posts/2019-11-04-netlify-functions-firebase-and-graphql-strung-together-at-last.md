@@ -169,6 +169,7 @@ module.exports = {  addOpenings };
 ```
 
 **The opening book**
+
 ```
 /* eslint-disable comma-dangle */
 module.exports = [
@@ -213,41 +214,80 @@ module.exports = [
     fen: 'rnbqkbnr/pppppppp/8/8/8/7N/PPPPPPPP/RNBQKB1R b KQkq - 1 1'
   },
 ];
-
 ```
 
-
-****
-
+- - -
 
 ## Creating the client
 
-Naturally I want to use apollo-client (in for a dime, in for a dollar as the saying goes). The easiest way I've found is to use create-react-app, and \[apollo-boost] to get a skeletal client up and running quickly.  Once this is done, I create a React component to trigger a call to my lambda, using the GraphQL API it provides.
+I'm using apollo-client in the React application. The easiest way to do so is create-react-app, then toss in \[apollo-boost] to get a skeletal client up and running quickly.  Then create a React component to trigger a call to the lambda, using the GraphQL API it provides.
 
-\[code snippet]
+The component will provide the start/end indices of the opening book to load, and a submit button. Here's a summarized version of the component:
 
-And the response I'll show in a window alert box:
+```
+/* eslint-disable no-alert */
+import React, { useState } from 'react';
+import fetch from 'node-fetch';
+import ApolloClient, { gql } from 'apollo-boost';
 
-\[image]
+const styles = {
+//...
+};
+
+const client = new ApolloClient({
+  uri: '/.netlify/functions/pgnfen',  //the lambda URL
+  fetch,
+});
+
+export default () => {
+  const [start, setStart] = useState(0);
+  const [end, setEnd] = useState(5);
+
+  const clickHandler = async () => {
+    const mutation = gql`mutation {
+      addOpenings(start: ${start}, end: ${end})
+    }`;
+
+    // eslint-disable-next-line no-console
+    const count = await client.mutate({ mutation })
+      .catch((e) => { window.alert(e); });
+    // console.dir(count);
+    window.alert(`${count.data.addOpenings} documents written`);
+  };
+
+  const startEndHandler = (evt) => {
+    if (evt.target.name === 'start') {
+      setStart(evt.target.value);
+    } else {
+      setEnd(evt.target.value);
+    }
+  };
+
+  return (
+//...
+    <input type="button" onClick={clickHandler} value="Load Scids" />  Row start:&nbsp;&nbsp;
+    <input name="start" type="number" step="5" style={styles.numInput} onChange={startEndHandler} value={start} />
+Row end:&nbsp;&nbsp;
+     <input name="end" type="number" step="5" style={styles.numInput} onChange={startEndHandler} value={end} />
+//...
+  );
+};
+```
+
+And the response will show in a window alert box:
+
+![](/media/screenshot-2019-11-06-at-11.50.01-am.png "Alert box with document written noted")
 
 ## Added bonus!
 
 Since I used apollo-server-lambda as a basis for the Netlify Function, I can go directly to the service endpoint via URL and it will bring up GraphQL Playground:
 
-\[image]
+![](/media/screenshot-2019-11-06-at-11.55.16-am.png "Playground")
 
 Here I can test queries and mutations prior to embedding them in my React client code.
 
-**Also**, when using \`netlify dev\` I have a hot server courtesy of create-react-app, so I can see result of code changes in "real" time. 
-
-# Deployment
-
-As I mentioned, there are several ways of deploying, but my preference is:
-
-1. netlify dev for work-in-progress (local server)
-2. yarn build to build the project; then netlify deploy to deploy it to a temporary netlify server
-3. finally, netlify deploy --prod to deploy to my production server
+**Also**,  invoking \`netlify dev\` gives me a hot server courtesy of create-react-app, so I can see result of code changes in "real" time. 
 
 - - -
 
-That's it!  Here's a link to source.
+That's it!  Here's a link to [source](https://github.com/JeffML/firebase-lambda2).

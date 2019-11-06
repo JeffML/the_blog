@@ -15,47 +15,68 @@ tags:
   - GraphQL
   - Apollo
 ---
-In a [previous post](https://www.freecodecamp.org/news/you-cant-get-there-from-here-how-netlify-lambda-and-firebase-led-me-to-a-serverless-dead-end/) I confessed defeat in attempting to get a lambda GraphQL server to connect a Firestore instance.  A short time later I found a different Node package to achieve what I couldn't before: it allowed the Firebase credentials file to be passed in as a JSON dependency.
+In a [previous post](https://www.freecodecamp.org/news/you-cant-get-there-from-here-how-netlify-lambda-and-firebase-led-me-to-a-serverless-dead-end/) I confessed defeat in attempting to get an [AWS Lambda](https://www.netlify.com/products/functions/) GraphQL server to connect to a [Firebase](https://firebase.google.com/docs) server.  I didn't give up right away, though, and a short time later found a [different Node package](https://www.npmjs.com/package/firebase-admin) to achieve what I couldn't before.
 
-# But...
+Why use AWS Lambda to host a GraphQL server?  Scalability would be the obvious reason, but I did it to learn.
 
-It turns out there are more to dependencies in Netlify Functions than are readily apparent. In fact, there are several ways to deploy a lambda function to Netlify:
+# And I learned a lot
+
+Especially when it came to deployment. I used Netlify Functions to manage the deployment of both the AWS Lambda functions and the React client that calls them. There was more to this than I originally thought.
+
+There are several ways to deploy a project using Netlify:
 
 ## zip-it-and-ship-it
 
-This is a utility that works a lot like webpack: for each function it creates an archive file along with all its dependencies.  Like webpack, it only pulls in dependencies that are actually required by the function. For instance:
+This is [a utility](https://github.com/netlify/zip-it-and-ship-it) that works a lot like [webpack](https://webpack.js.org/): for each function, it creates an archive file which bundles the function along with its dependencies.  Like webpack, it only pulls in dependencies that are actually required by the function. 
+
+Netlify expects /functions folder by convention. When writing new functions, its source is at the same level as any NodeJS modules it needs as dependencies. If you add a new function that has new module dependencies, then they go into the node_modules folder (using `yarn add` or npm` install --save`). 
+
+The following shows two lambda functions along with a single node_modules folder:
 
 ![](/media/screenshot-2019-11-05-at-3.45.48-pm.png "Source folder for lambda functions")
 
-This has two lambda functions, plus a node_module folder for the module dependencies needed by the lambda functions. To use zip-it-and-ship-it, you write a simple JavaScript program to be called in the package.json's build scripts. That program defines the input folder (functions) and the output folder (say, functions_build).  Once run, you get several .zip files that can be deployed and run on Netlify. Those zip files contain a the function code as well as a node_modules folder that has only those dependencies needed by each function:
+To use zip-it-and-ship-it, you write a simple JavaScript program that is called by the package.json build script. 
+
+**zipIt.js**
+
+```
+const { zipFunctions } = require('@netlify/zip-it-and-ship-it')zipFunctions('functions', 'functions-dist')
+```
+
+And this would be invoked something like so:
+
+**package.json**
+
+```
+"build": "npm-run-all build:*","build:app": "react-scripts build","build:functions": "node ./zipFuncs.js",
+```
+
+Once built, several .zip files are generated . Those archives contain the function code as well as a node_modules folder which is not the original, but contains only those dependencies needed by each function:
 
 ![](/media/screenshot-2019-11-05-at-3.52.56-pm.png "The function build output")
 
-The zip-it-and-ship-it mechanism is also involved in the following two processes:
-
 ## netlify-lambda
 
-You can read about netlify-lambda here. Under the covers, it's using zip-it-and-ship-it.
+This deployment mechanism is similar to the above, but uses **babel** and **webpack** to perform its duties. If your comfortable and familiar with webpack, this might be the deployment option for you.
 
 ## continuous deployment
 
-The continuous deployment option is available if you're using one of the supported repositories, like github. Once you push changes to the repo, Netlify is notified and will run your build processes. This could involve zip-it-and-ship-it or netlify-lambda. You can also bypass both of those tools and Netlify will attempt to build the application examining the files, both .js and .json.
+The continuous deployment option is available if you're using one of the supported repositories (GitHub, GitLab, or Bitbucket). Once you push changes to your repository, Netlify is notified and will run your build processes, which may involve zip-it-and-ship-it or netlify-lambda...but you also have the option of deploying unbundled functions to your repository, and [Netlify will use zip-it-and-ship-it](https://github.com/netlify/netlify-lambda/issues/142#issuecomment-483880089) behind the scenes.
 
-## Netlify Dev
+## Netlify CLI
 
-The newest deployment option on the block is the Netlify CLI, a.k.a. Netlify Dev. This encompasses two main deployment options, as well as script to create, build, and test functions. 
+The Netlify CLI offers yet another way to deploy, without much fuss or mystery. There are two main deployment options:
 
-`netlify deploy` will deploy to a Netlify server; it requires a build step prior to deployment.
+* `netlify deploy` will push the[ local project to a Netlify server.](https://docs.netlify.com/cli/get-started/#manual-deploys) You first have to invoke the build step locally, though. 
+* `netlify dev` [creates a local server](https://github.com/netlify/cli/blob/master/docs/netlify-dev.md), along with a proxy to your lambda functions, and kicks off the application. It does **not** require a build step.
 
-`netlify dev` creates a local server, along with a proxy to your lambda functions, and kicks off the application. It does not require a build step.
-
-There is also a script to help you create your lambda functions: `netlify function:create`.  If you use this method, you will get a folder structure different from the one used by the previous deployment methods:
+There is also a script to help you create your lambda functions: `netlify function:create`.  If you use this method, you will get a folder structure different than shown previously:
 
 ![](/media/screenshot-2019-11-05-at-4.11.21-pm.png "Folder structure generated by `netlify function:create`")
 
-Each function has its own folder, along with a node_modules and package.json file (plus others not shown, such as .lock files). Similar to what would be in the .zip archives that zip-it-and-ship-it creates.
+In this case, each function has its own folder, along with a node_modules and package.json file (plus others not shown, such as .lock files). Similar to what would be in the .zip archives that zip-it-and-ship-it creates.
 
-Now, if you do generate your lambdas this way, continuous deployment will break, as it correctly attempts to build the lambda code without some assistance on your part. For instance, you may have to put something like this in your build script:
+Now, if you do generate your lambdas this way, continuous deployment will break, as **zip-it-and-ship-it** doesn't handle this folder structure by itself. You can put something like this in your build script to fix continuous deployment:
 
 ```
 "build": "npm-run-all build:*",
@@ -64,21 +85,19 @@ Now, if you do generate your lambdas this way, continuous deployment will break,
 "build:functions": "yarn --cwd functions/func2 install",
 ```
 
-Which will install the dependencies needed by each lambda.
-
-For my projects, I'll be using the Netlify Dev CLI going forward.
+These build steps will install the dependencies needed by each lambda.
 
 # The Example
 
-Your homework assignment is to set up a Netlify account and a Firebase account. You will also need to grab a Firebase credentials JSON file and put it somewhere in your project (the example uses fake-creds.json, which is FAKE). You need to be able to authenticate using Netlify Identity, as well.
+Your homework assignment is to set up a [Netlify account](https://www.netlify.com/) and a [Firebase account](https://firebase.google.com/). The app will use [Netlify Identity](https://docs.netlify.com/visitor-access/identity/#enable-identity-in-the-ui) to login to the Netlify service. You will also need to grab a [Firebase credentials JSON file](https://firebase.google.com/docs/admin/setup#add_firebase_to_your_app) and put it somewhere in your project (the example uses fake-creds.json, which is **FAKE**, so won't work). 
 
-## About what this does
+## About the application
 
-I'm a kind of a chess nut, so for this example I'll load in a partial chess openings book (in JSON) into the firestore database. In this somewhat contrived example, the book is actually stored with the lambda function, but its loading is triggered by the React client through a GraphQL mutation call. 
+Being a geek, I'm building a database of chess openings. I have an openings book in a JSON file, from which I'll load the database. In this somewhat contrived example, the book is actually stored with the lambda function in the /functions/pgnfen folder (`netlify function:create pgnfen`), however the loading is triggered by the React client through a GraphQL mutation call. 
 
 ## Creating the lambda function
 
-For the lambda function, I used apollo-server-lambda to serve up the GraphQL API to the Firestore database. To talks to Firestore, I'll use firebase-admin. I can get a start on generating this function using `netlify function:create`. It will ask me what template I want to use for the lambda function; the correct choice is in blue:
+I used apollo-server-lambda add a GraphQL API frontend to the Firestore database. To talk to Firestore, I use firebase-admin. I can get a start on generating this function using `netlify function:create`. It will ask me what template I want to use for the lambda function; the correct choice is in blue:
 
 ![](/media/screenshot-2019-11-05-at-4.39.37-pm.png)
 

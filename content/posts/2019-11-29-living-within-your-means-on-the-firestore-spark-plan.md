@@ -2,7 +2,7 @@
 template: post
 title: 'Living within your means: Firestore''s Spark Plan'
 slug: /posts/livingfirestore
-draft: true
+draft: false
 date: 2019-11-29T18:47:27.760Z
 description: >-
   With 50,000 reads and 20,000 writes, you might think your early development

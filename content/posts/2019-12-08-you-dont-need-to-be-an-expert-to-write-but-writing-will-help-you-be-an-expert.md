@@ -1,6 +1,6 @@
 ---
 template: post
-title: 'I write to learn, and share the experience of learning'
+title: I write to learn
 slug: /posts/expert
 draft: true
 date: 2019-12-08T19:51:20.764Z

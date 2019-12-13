@@ -2,13 +2,15 @@
 template: post
 title: I write to learn
 slug: /posts/expert
-draft: true
+draft: false
 date: 2019-12-08T19:51:20.764Z
 description: 'Impostor syndrome is common among technical writers. '
 category: Technical
 tags:
   - writing
 ---
+![](/media/image-2.jpg)
+
 I'm either comfortably retired or unemployed, I haven't decided which. What I do know is that I am not yet ready for decades of hard-won knowledge to lie fallow. Still driven to learn new technologies and to develop new projects, I see the experience and results generally getting better over time (I swear I am not an optimist by nature).  I now have the time to work on what interests me, and at my own pace.
 
 The rate of change in technologies has increased markedly since I started my career writing code in a [4GL](https://en.wikipedia.org/wiki/Fourth-generation_programming_language). The UI back then utilized extended ASCII, 80 characters wide and 50 lines long.  It was a much simpler environment, and I could whip out a reasonable complete custom business application in a week (though back then, when I was younger,  an "easy" week was 80 hours). Changes to operating systems, languages and hardware did happen, but on a scale of months or even years.

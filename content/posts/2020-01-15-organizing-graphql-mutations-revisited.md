@@ -1,0 +1,157 @@
+---
+template: post
+title: 'Organizing GraphQL Mutations, Revisited'
+slug: /posts/organizegraphql
+draft: true
+date: 2020-01-15T22:56:28.349Z
+description: >-
+  Unlike GraphQL Queries, Mutations require dependable order of execution. This
+  post explains one way of achieving that.
+category: Technical
+tags:
+  - GraphQL
+---
+Background 
+
+Some time back I wrote an article about how to organize GraphQL mutations in a heirarchy, much like how it is sometimes done for queries.  Awhile later, xxx informed me of a problem with my approach: it didn't guarantee order of executions.  This is important, because unlike queries, mutations modify state, and one mutation may require the completion of a previous mutation in order to work correctly.  After verifying that he was correct, I wrote a follow-up article as a correction of sorts.
+
+Update
+
+Matthew Lanigan has suggested simple Promise-based mechanism for ensuring order-of-execution in "nested" mutations. It's quite elegant and seems to work without introducing any side-effects.
+
+The mechanism
+
+Here's an example of a flat set of mutations that operate on a collection of books:
+
+xxx
+
+Next is my method to nest those operations under a Book entity:
+
+xxx
+
+And this works okay, except if I execute more than one mutation, I can't control which one finishes executing first.  For example, if I add two books, then try to cross-reference them, I may get an error during the cross-reference operation because one or both books may not have finished being added to the collection.  
+
+The solution
+
+Mathew's elegant and simple approach constructs a object at the level of the parent (encapsulating) mutation, which creates a **promise** field that holds a Promise.  That Promise is immediately resolved, so that any subsequent **then** clause will be invoked immediately. 
+
+Example
+
+```
+class Sequential {  
+   constructor() { this.promise = Promise.resolve() }
+}
+```
+
+The Sequential class is then encapsulating mutation;  it doesn't actually mutate anything, it is just a holder for mutation operations. So let's add a mutation operation:
+
+```
+const msg = (id, wait) => new Promise(resolve => {
+  setTimeout(() => {
+    console.log({id, wait})
+    let message = `response to message ${id}, wait is ${wait} seconds`;
+    resolve(message);
+  }, wait)
+})
+
+class Sequential {
+  constructor() {
+    this.promise = Promise.resolve()
+  }
+
+  message({id, wait}) {
+    this.promise = this.promise.then(() => msg(id, wait))
+    return this.promise
+  }}
+```
+
+Notice that the message waits for any existing Promise to finish.  If you recall, the Promise invoked in the constructor is resolved immediately, so `this.promise.then(...) will execute instantaneously if it is the first mutation invoked.
+
+The outer msg() function also returns a Promise. It is written in a way to behave asychronously, resolving only when the specified wait time has expired. This will come in handing during testing, as you will see.
+
+The Schema
+
+The GraphQL schema is pretty basic:
+```
+type Query {
+  noop: String!
+}
+
+type MessageOps {
+  message(id: ID!, wait: Int!): String!
+}
+
+type Mutation {
+  Sequential: MessageOps
+}
+```
+I can add as many operations to MessageOps as desired, with corresponding implementation of those operations in the Sequential class as previously described.
+
+The Resolver
+The code for the resolvers is straightforward:
+```
+const resolvers = {
+  Mutation: {
+    Sequential: () => new Sequential(),
+  }
+}
+```
+
+The execution
+Now, at last, I am able to execute my mutation operations and see what happens.  I am looking for two things: 1) the response to the mutation call, and 2) the console output. This latter is important, because only the console output will tell me in what order the mutations were completed.
+
+So here's the test:
+```
+mutation sequential {
+  Sequential {
+    message1: message(id: 1, wait: 3000)
+    message1a: message(id: 11, wait: 2500)
+  }
+  Sequential {
+    message2: message(id: 2, wait: 1000)
+    message2a: message(id: 22, wait: 750)
+  }
+  Sequential {
+    message3: message(id: 3, wait: 500)
+    message3a: message(id: 33, wait: 250)
+  }
+  Sequential {
+    message4: message(id: 4, wait: 100)
+    message4a: message(id: 44, wait: 50)
+  }
+}
+```
+The response is as follows:
+```
+{
+  "data": {
+    "Sequential": {
+      "message1": "response to message 1, wait is 3000 seconds",
+      "message1a": "response to message 11, wait is 2500 seconds",
+      "message2": "response to message 2, wait is 1000 seconds",
+      "message2a": "response to message 22, wait is 750 seconds",
+      "message3": "response to message 3, wait is 500 seconds",
+      "message3a": "response to message 33, wait is 250 seconds",
+      "message4": "response to message 4, wait is 100 seconds",
+      "message4a": "response to message 44, wait is 50 seconds"
+    }
+  }
+}
+```
+This looks like everything occurred in order, but that can be deceiving: The order of results in the returned JSON matches the order of the mutation calls, but that order can be different than that in which the mutations completed. It is the console output from each invocation of msg() that tells me the actual order-of-execution:
+
+```
+{ id: '1', wait: 3000 }
+{ id: '11', wait: 2500 }
+{ id: '2', wait: 1000 }
+{ id: '22', wait: 750 }
+{ id: '3', wait: 500 }
+{ id: '33', wait: 250 }
+{ id: '4', wait: 100 }
+{ id: '44', wait: 50 }
+```
+And this is proof that the mutations are actually occurring in the correct sequence: msg #1, which takes 3000 milliseconds, finishes execution before msg #44, which only takes 50 milliseconds to finish.
+
+So now I await to be informed of the next "gotcha".  Until then, please feel free to examine the code here. It contains some extra goodies that you can run your own GraphQL tests against.
+
+

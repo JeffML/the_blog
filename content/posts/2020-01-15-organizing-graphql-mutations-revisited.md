@@ -11,31 +11,54 @@ category: Technical
 tags:
   - GraphQL
 ---
-Background 
+# Background
 
-Some time back I wrote an article about how to organize GraphQL mutations in a heirarchy, much like how it is sometimes done for queries.  Awhile later, xxx informed me of a problem with my approach: it didn't guarantee order of executions.  This is important, because unlike queries, mutations modify state, and one mutation may require the completion of a previous mutation in order to work correctly.  After verifying that he was correct, I wrote a follow-up article as a correction of sorts.
+Some time back [I wrote an article](https://www.freecodecamp.org/news/organizing-graphql-mutations-653306699f3d/) about how to organize GraphQL mutations in a heirarchy, much like how it is [sometimes done for queries](https://blog.hasura.io/graphql-and-tree-data-structures-with-postgres-on-hasura-dfa13c0d9b5f/#fetching-comments).  Awhile later, Anders Ringqvist informed me of a problem with my approach: it didn't guarantee that mutations will be executed in order.  This is important because, unlike queries, mutations modify state, and one mutation may require the completion of a previous mutation to operate correctly.  After verifying this, I wrote a [follow-up article](https://www.freecodecamp.org/news/beware-of-graphql-nested-mutations-9cdb84e062b5/) as a retraction of sorts.
 
-Update
+# Never say never
 
-Matthew Lanigan has suggested simple Promise-based mechanism for ensuring order-of-execution in "nested" mutations. It's quite elegant and seems to work without introducing any side-effects.
+Matthew Lanigan recently contacted me and suggested a very simple Promise-based mechanism for ensuring order-of-execution in "nested" mutations. It's quite elegant and seems to work without introducing any side-effects.
 
-The mechanism
+# The mechanism
 
 Here's an example of a flat set of mutations that operate on a collection of books:
 
-xxx
+```
+mutation {
+  addBook(ISBN: "978-3-16-148410-0", title: "Schematics of the Illudium Q-36 Explosive Space Modulator", author: "Martian, Marvin") {
+    references {
+      title
+    }
+  },
+  updateBook(ISBN: "978-3-16-148410-0", title: "Overview of the Illudium Q-36 Explosive Space Modulator") {
+     success
+  }
+}
+```
 
-Next is my method to nest those operations under a Book entity:
+Here are those same operations rewritten to use a single Book entity:
 
-xxx
+```
+mutation {
+  Book(ISBN: "978-3-16-148410-0") {
+    add(title: "Schematics of the Illudium Q-36 Explosive Space Modulator", author: "Martian, Marvin") {
+      references {
+        title
+      }
+    },
+    update(title: "Overview of the Illudium Q-36 Explosive Space Modulator") {
+     success
+    }
+}
+```
 
-And this works okay, except if I execute more than one mutation, I can't control which one finishes executing first.  For example, if I add two books, then try to cross-reference them, I may get an error during the cross-reference operation because one or both books may not have finished being added to the collection.  
+The problem with the latter example is that I can't be sure that **add** will execute before **update**.  Since I can update a book that hasn't been added yet, that's a problem  
 
-The solution
+# The solution
 
 Mathew's elegant and simple approach constructs a object at the level of the parent (encapsulating) mutation, which creates a **promise** field that holds a Promise.  That Promise is immediately resolved, so that any subsequent **then** clause will be invoked immediately. 
 
-Example
+# An example
 
 ```
 class Sequential {  
@@ -67,11 +90,12 @@ class Sequential {
 
 Notice that the message waits for any existing Promise to finish.  If you recall, the Promise invoked in the constructor is resolved immediately, so `this.promise.then(...) will execute instantaneously if it is the first mutation invoked.
 
-The outer msg() function also returns a Promise. It is written in a way to behave asychronously, resolving only when the specified wait time has expired. This will come in handing during testing, as you will see.
+The outer msg() function also returns a Promise. It is written in a way to behave asynchronously, resolving only when the specified wait time has expired. This will come in handing during testing, as you will see.
 
-The Schema
+## The Schema
 
 The GraphQL schema is pretty basic:
+
 ```
 type Query {
   noop: String!
@@ -85,10 +109,13 @@ type Mutation {
   Sequential: MessageOps
 }
 ```
+
 I can add as many operations to MessageOps as desired, with corresponding implementation of those operations in the Sequential class as previously described.
 
-The Resolver
+## The Resolver
+
 The code for the resolvers is straightforward:
+
 ```
 const resolvers = {
   Mutation: {
@@ -97,10 +124,12 @@ const resolvers = {
 }
 ```
 
-The execution
+## The execution
+
 Now, at last, I am able to execute my mutation operations and see what happens.  I am looking for two things: 1) the response to the mutation call, and 2) the console output. This latter is important, because only the console output will tell me in what order the mutations were completed.
 
 So here's the test:
+
 ```
 mutation sequential {
   Sequential {
@@ -121,7 +150,9 @@ mutation sequential {
   }
 }
 ```
+
 The response is as follows:
+
 ```
 {
   "data": {
@@ -138,6 +169,7 @@ The response is as follows:
   }
 }
 ```
+
 This looks like everything occurred in order, but that can be deceiving: The order of results in the returned JSON matches the order of the mutation calls, but that order can be different than that in which the mutations completed. It is the console output from each invocation of msg() that tells me the actual order-of-execution:
 
 ```
@@ -150,8 +182,7 @@ This looks like everything occurred in order, but that can be deceiving: The ord
 { id: '4', wait: 100 }
 { id: '44', wait: 50 }
 ```
+
 And this is proof that the mutations are actually occurring in the correct sequence: msg #1, which takes 3000 milliseconds, finishes execution before msg #44, which only takes 50 milliseconds to finish.
 
-So now I await to be informed of the next "gotcha".  Until then, please feel free to examine the code here. It contains some extra goodies that you can run your own GraphQL tests against.
-
-
+So now I await to be informed of the next "gotcha".  Until then, please feel free to examine the code [here](https://github.com/JeffML/nested_mutations). It contains some extra goodies that you can run your own GraphQL tests against.

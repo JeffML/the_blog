@@ -2,7 +2,7 @@
 template: post
 title: 'Organizing GraphQL Mutations, Revisited'
 slug: /posts/organizegraphql
-draft: true
+draft: false
 date: 2020-01-15T22:56:28.349Z
 description: >-
   Unlike GraphQL Queries, Mutations require dependable order of execution. This

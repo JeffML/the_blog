@@ -2,7 +2,7 @@
 template: post
 title: Visualizing Grandmaster Openings
 slug: /posts/hmgm
-draft: true
+draft: false
 date: 2020-02-11T13:16:01.191Z
 description: >-
   Data visualization is a process by which graphics are used to enhance

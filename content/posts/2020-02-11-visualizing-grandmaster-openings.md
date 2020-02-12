@@ -86,8 +86,6 @@ Ah!  Morozevich occasionally likes to respond 2.d3 instead of 2.d4, whereas Shir
 
 It's possible to drill down further and look at the responses to a move; let's look at the responses when Moro plays 2.d4 in response to the French:
 
-![Responses to French Defence, 2. d4](/media/screenshot-2020-02-11-at-8.31.35-am.png "Responses to French Defence, 2. d4")
-
 Here we can see that Moro's opponent's usually go into a French Defence with 2...d5, but occasionally transpose to a 2...b6 variation, or a variation known as the Franco-Sicilian (2...c5).
 
 ## Mapping frequence of success

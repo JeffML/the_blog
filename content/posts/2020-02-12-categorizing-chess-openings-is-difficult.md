@@ -15,10 +15,6 @@ tags:
   - ECO
   - Encyclopaedia of Chess Openings
 ---
-
-
-
-
 I find the Encyclopaedia of Chess Openings (ECO) classification of openings wanting. In part this is because I'm no longer a serious chess player, and don't often research openings by ECO code. More often, I am looking up an opening based on a chess position, or by drilling down through moves in an openings database.
 
 ECO was devised to cover serious opening lines--those played by masters in tournament games. If it's a seldom-seen opening, then it will get lumped under one of the 00 classifications: A00, B00, C00, D00, and E00. Note that early opening moves also fall under 00 classification: the French Defense is C00, and that encompassed positions like this:
@@ -43,6 +39,14 @@ Given that the ECO codes are too general and hard to remember, what alternatives
 
 One more thing:  ECO classifications are base on move sequences, so the same position arising from different move sequence may have different classifications.  1.c4 is English; 1...d5 in response is the Anglo-Scandinavian;  now if White plays 2.d4,  is it still a variation of the English?  Looks like a Queen's Gambit to me.
 
+And opening notation isn't consistent!  Here's a screenshot from Chess.com's opening database:
+
+![](/media/screenshot-2020-02-12-at-4.33.19-pm.png "Two notations, one move.")
+
+
+
+The two most popular responses listed are 6...Ne7 and 6...Nge7.  They are the same move, but the opening database lists them as separate moves. Either notation is valid, is the problem. If instead this position was associated with an opening, there would be no ambiguity.
+
 Positions should identify openings. A position might be have many opening variation names, but if it is identified solely by position, there is no ambiguity. One could use FEN notation as an identifier. The drawback, of course, is that it is even less memorable than ECO code.
 
 The other drawback of using FEN notations ids for opening variations is that it is not easy to determine if any two FENs arise from the same opening. It could probably be done, but it wouldn't be simple.
@@ -63,10 +67,12 @@ Crazy idea, right?  How is this possibly better than the corresponding ECO code 
 
 It is however and identifier of a specific position.  It is true, another opening database might have a different ranking of popularity, but we only need to use one really complete database for the initial encoding. We don't care if the ranking change between databases or over time.  Once the encoding is done, it's done.*
 
-An identifier, be it FEN or this proposed rank-encoding, doesn't have to be easy to remember. It's an abstraction.
+An identifier, be it FEN or this proposed rank-encoding, doesn't have to be easy to remember. It's an abstraction. A name can be associated with an identifier, much like Lawrence Smith is the name associated with the phone number +1(555)555-5555.  In fact, multiple names can be associated with an identifier: Larry Smith, Larry K. Smith, L. K. Smith, etc.  The names are what are interchangeably used to refer to the man, but the phone number is his and his alone. 
 
+Just like with Larry though, an opening position can be referred to by multiple names. We don't care. What we do worry about, though, is that opening variation names can be hard to remember.  Some variations are not named with something easy to remember.  For instance, I have one variation in my database name:
 
+French: KIA 2.d3 d5 3.Qe2
 
-
+Well, you could remember that, but the deeper you go, the longer the name, the harder it gets. Still, names are useful things, and easer to remember than something like 3.9.12.4.1
 
 \*The exception being extensions of the encoding, as theory deepens and names/descriptions are assigned to these newer variations.

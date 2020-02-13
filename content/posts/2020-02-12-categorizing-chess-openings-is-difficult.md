@@ -73,6 +73,30 @@ Just like with Larry though, an opening position can be referred to by multiple 
 
 French: KIA 2.d3 d5 3.Qe2
 
-Well, you could remember that, but the deeper you go, the longer the name, the harder it gets. Still, names are useful things, and easer to remember than something like 3.9.12.4.1
+Well, you could remember that, but the deeper you go, the longer the name, the harder it gets. Still, names are useful things, and easer to remember than something like 3.9.12.4.1!
+
+## Improving on the naive and radical
+
+So one of the side-effects of using rank-encoding as an opening position identifier, is that patterns repeat. This gives us the opportunity to group together these repeating patterns and assign them a mnemonic abbreviation. Ruy Lopez (1.1.1.1.1) could be abbreviated 'RL'. The Morphy Defense would be RL.MD (RL.1); the Exchange Variation would be RL.MD.EV (RL.MD.2). You could use three-letter acronyms as mnemonics (QGD). 
+
+In the case of French: KIA 2.d3 d5 3.Qe2, it might be encoded as FD.KIA.2 (3.Qe2 being the second most common move for White). 
+
+A rule for naming opening rank ids would be: 
+
+1) find the longest repeating segment
+
+2) See if that segment (sequence of moves) has a name in the database; if so, abbreviate it and us it
+
+2a) The segment 1.1.1.1.1.2 would have a description: Ruy Lopez: Morphy Defense, Exchange Variation, which would be abbreviated as shown earlier (RD.MD.EV).  
+
+3) else, reduce the segment by one and try again. It is possible some variant of the Morphy Defence is wayyy down in the ranking: 1.1.1.1.1.12 and have no name. In that case, reduce the segment to search for by one, and wind up with RD.MD as the opening variation mnemonic.
+
+## Can this process be automated?
+
+I think so.  Let's try it with variations of the Bird Opening, because there aren't so many. 
+
+<do it>
+
+
 
 \*The exception being extensions of the encoding, as theory deepens and names/descriptions are assigned to these newer variations.

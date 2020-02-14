@@ -14,6 +14,27 @@ tags:
   - ECO
   - Encyclopaedia of Chess Openings
 ---
+Chess openings, which are arrived at by initial moves of the chess pieces, are frustratingly hard to classify consistently. The first move by White is fairly easy to name: King's Pawn Opening, Queen's Pawn Opening, English, Reti...and on to rarer first moves. From there, though, it gets complicated quickly. Blacks responses to a King's Pawn opening are the Open Game (1...e5), the Sicilian Defense (1...c5), the French Defense (1...e6), the Caro-Kann (1...c6), and assorted others. The Open Game is transitory--it quickly leads to the more well-known Ruy Lopez, a Petroff, a Giuoco Piano, or who-knows-what.
+
+Nevertheless, the names of openings and their variations and sub-variations are a type of classification, so long as they're consistent.  The opening **French Defense: Winawer, Delayed Exchange Variation, 4...Qxd5** can be converted to to a tree representation:
+
+* French Defense
+  * Winawer
+    * Delayed Exchange Variation
+      * 4...Qxd5
+
+If this was done for all French Defense variations, you't wind up with a detailed, if verbose, classification of the French Defense and all its variations. This tree could be condensed into a single string. NicBase encodes openings with a two-letter acronym, followed by number codes for variations; the Winawer French is FR 8, but was not able to find a code for the Delayed Exchange Variation. Neither could I find a specific ECO code for this variation, only the generic French Winawer, without 4.e5 (C15).
+
+That's not to say that something like the variation above isn't in the NicBase or ECO classification system,  as it be arrived at by transposition.
+
+
+
+
+
+
+
+ECO
+
 I find the Encyclopaedia of Chess Openings (ECO) classification of openings wanting. In part this is because I'm no longer a serious chess player, and don't often research openings by ECO code. More often, I am looking up an opening based on a chess position, or by drilling down through moves in an openings database.
 
 ECO was devised to cover serious opening lines--those played by masters in tournament games. If it's a seldom-seen opening, then it will get lumped under one of the 00 classifications: A00, B00, C00, D00, and E00. Note that early opening moves also fall under 00 classification: the French Defense is C00, and that encompassed positions like this:
@@ -41,8 +62,6 @@ One more thing:  ECO classifications are base on move sequences, so the same pos
 And opening notation isn't consistent!  Here's a screenshot from Chess.com's opening database:
 
 ![](/media/screenshot-2020-02-12-at-4.33.19-pm.png "Two notations, one move.")
-
-
 
 The two most popular responses listed are 6...Ne7 and 6...Nge7.  They are the same move, but the opening database lists them as separate moves. Either notation is valid, is the problem. If instead this position was associated with an opening, there would be no ambiguity.
 
@@ -82,20 +101,17 @@ In the case of French: KIA 2.d3 d5 3.Qe2, it might be encoded as FD.KIA.2 (3.Qe2
 
 A rule for naming opening rank ids would be: 
 
-1) find the longest repeating segment
-
-2) See if that segment (sequence of moves) has a name in the database; if so, abbreviate it and us it
+1. find the longest repeating segment
+2. See if that segment (sequence of moves) has a name in the database; if so, abbreviate it and us it
 
 2a) The segment 1.1.1.1.1.2 would have a description: Ruy Lopez: Morphy Defense, Exchange Variation, which would be abbreviated as shown earlier (RD.MD.EV).  
 
-3) else, reduce the segment by one and try again. It is possible some variant of the Morphy Defence is wayyy down in the ranking: 1.1.1.1.1.12 and have no name. In that case, reduce the segment to search for by one, and wind up with RD.MD as the opening variation mnemonic.
+3. else, reduce the segment by one and try again. It is possible some variant of the Morphy Defence is wayyy down in the ranking: 1.1.1.1.1.12 and have no name. In that case, reduce the segment to search for by one, and wind up with RD.MD as the opening variation mnemonic.
 
 ## Can this process be automated?
 
 I think so.  Let's try it with variations of the Bird Opening, because there aren't so many. 
 
 <do it>
-
-
 
 \*The exception being extensions of the encoding, as theory deepens and names/descriptions are assigned to these newer variations.

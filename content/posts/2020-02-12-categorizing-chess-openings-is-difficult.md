@@ -1,13 +1,12 @@
 ---
 template: post
-title: Categorizing chess openings is difficult
+title: The difficulties of classifying chess openings
 slug: /posts/chesscat
 draft: true
 date: 2020-02-13T00:35:13.016Z
 description: >-
-  Various attempts have been made to categorize chess openings, all with
-  limitations. Can a more complete an systematic approach lead to better
-  results?
+  Many attempts have been made to categorize chess openings and their
+  variations, none with complete success. I offer yet another proposal.
 category: chess
 tags:
   - chess

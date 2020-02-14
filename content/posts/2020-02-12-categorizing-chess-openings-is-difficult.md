@@ -14,6 +14,12 @@ tags:
   - ECO
   - Encyclopaedia of Chess Openings
 ---
+_Note to self:  narrow the focus onto the disadvange of move sequences vs positions to ID openings.  Talk about FEN and rank-encoding.  Talk about NicBase vs acronym-string naming._ 
+
+_Also, be sure to cover the case where new variations appear (TNs), possibly having more popularity when eventually named than some older obscure variation (do we reserve a special number, like '99x' to handle these? Or just rank them lower anyway)._
+
+__
+
 Chess openings, which are arrived at by initial moves of the chess pieces, are frustratingly hard to classify consistently. The first move by White is fairly easy to name: King's Pawn Opening, Queen's Pawn Opening, English, Reti...and on to rarer first moves. From there, though, it gets complicated quickly. Blacks responses to a King's Pawn opening are the Open Game (1...e5), the Sicilian Defense (1...c5), the French Defense (1...e6), the Caro-Kann (1...c6), and assorted others. The Open Game is transitory--it quickly leads to the more well-known Ruy Lopez, a Petroff, a Giuoco Piano, or who-knows-what.
 
 Nevertheless, the names of openings and their variations and sub-variations are a type of classification, so long as they're consistent.  The opening **French Defense: Winawer, Delayed Exchange Variation, 4...Qxd5** can be converted to to a tree representation:

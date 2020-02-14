@@ -23,9 +23,7 @@ Nevertheless, the names of openings and their variations and sub-variations are 
     * Delayed Exchange Variation
       * 4...Qxd5
 
-If this was done for all French Defense variations, you't wind up with a detailed, if verbose, classification of the French Defense and all its variations. This tree could be condensed into a single string. NicBase encodes openings with a two-letter acronym, followed by number codes for variations; the Winawer French is FR 8, but was not able to find a code for the Delayed Exchange Variation. Neither could I find a specific ECO code for this variation, only the generic French Winawer, without 4.e5 (C15).
-
-That's not to say that something like the variation above isn't in the NicBase or ECO classification system,  as it be arrived at by transposition.
+If this was done for all French Defense variations, you't wind up with a detailed, if verbose, classification of the French Defense and all its variations. This tree could be condensed into a single string. NicBase encodes openings with a two-letter acronym, followed by number codes for variations; the Winawer French is FR 8, but was not able to find a code for the Delayed Exchange Variation. Neither could I find a specific ECO code for this variation, only the generic French Winawer, without 4.e5 (C15).  Nor did it show up in SCID's codes,  where the closest I found was 
 
 
 

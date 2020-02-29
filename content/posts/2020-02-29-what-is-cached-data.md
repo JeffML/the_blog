@@ -68,7 +68,7 @@ Every resource request come with some meta information known as the header.  Con
 
 # CDN: a geo-located cache
 
-  A CDN is a caches that stores data in geographically distributed locations so that round-trip times to retieve data are reduced. This is achieved by having requests sent from a browser routed to a nearby CDN, thereby shortening the physical distance to where the requested data is stored. CDN's are also highly optimized to allow the fast servicing of a multitude of simultaneous requests.
+  A CDN is a caches that stores data in geographically distributed locations so that round-trip times to retrieve data are reduced. This is achieved by having requests sent from a browser routed to a nearby CDN, thereby shortening the physical distance to where the requested data is stored. CDN's are also highly optimized to allow the fast servicing of a multitude of simultaneous requests.
 
 \* The essential elements of a cache
 

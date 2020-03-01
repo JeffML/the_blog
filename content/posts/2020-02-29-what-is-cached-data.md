@@ -42,7 +42,7 @@ As mentioned, speed of retrieval is the primary purpose of a cache, but it also 
 
 Most of the time, the user is visiting a site that she or he has visited many times before. Websites have a propensity to change their content, though, and so whatever was cached on previous visits may not longer be fresh. How to determine when to refresh the cache by pulling new data from the server can be somewhat complex. 
 
-## The direct method: change the URI
+## The direct method: cache-busting
 
 Say I have a web page located at www.foobar.com/about.html which says everything about foobar.com that you would ever want to know.  Once you visit that page, all that data is cached by the browser.  Later, foobar.com is bought out by quxbaz.com, and the about page's content undergoes significant changes. The browsers cache doesn't have that new data, but it may thing what it has is current.  How might you convince the browser otherwise?
 
@@ -54,34 +54,38 @@ You don't have to change the page name, though. Since the URI also includes a qu
 
 Every resource request come with some meta information known as the header.  Conversely, every response also has header information associated with it. In some cases, the browser sees the response header values, and changes corresponding values in subsequent request headers. Some of those header values affect how caching is performed.
 
-**Expires**
-
-**Last-Modified**
-
-**ETag**
-
 **Cache-Control**
 
+When responding to a request, the server can send header tags to the browser indicating what behavior is should adapt when caching. If I load the page at https://en.wikipedia.org/wiki/Uniform_Resource_Identifier, the response contains this in its header record:
 
+cache-control: private, s-maxage=0, max-age=0, must-revalidate
+
+private means that only the browser should cache the document content
+
+s-maxage and max-age are set to 0, which is equivalent to the alternate directive no-cache. s-maxage I'll get to later; it is max-age that is used by browsers.  You might think that this tells the browser not to cache the resource, but instead it merely indicates that the browser must revalidate the what it has in its cache, updating it only if necessary.  The re-validation is done through a HEAD request, which only returns header information about the resource being requested. This header information is then examined by the browser to determine if it must make a full GET or POST request to fetch a new version of the resource. If a refetch is not indicated, then the browser will use its cache copy.
+
+must-revalidate commands the browser to revalidate the cached resource if it is stale. Since max-age is set to 0 in this case, the cached resource is immediately stale once received. The combination of max-age=0 and must-revalidate is equivalent to the directive no-cache.  Yes, there is a bit of redundancy in cache-control directives.
+
+Cache-control directives are extensive.  A complete documented list can be found [here](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control).
+
+**Other header tags affecting caching**
+
+The header tags expires and last-modified are now obsolete, but still sent by most servers for backward compatibility with older browsers.  An example:
+
+expires: Thu, 01 Jan 1970 00:00:00 GMT
+
+last-modified: Sun, 01 Mar 2020 17:59:02 GMT
+
+Here, the expires is set to the zeroth date (historically form UNIX operating system). That indicates that the resource expires immediately, just as max-age of 0 does.  Last-modified tell the browser when the latest update was made to the resource, which it can then use to decide if it should refetch it rather than use the cache value.
+
+\*\* clearing the cache (in-memory caches)
+
+\*\* hard reload
 
 
 
 # CDN: a geo-located cache
 
-  A CDN is a caches that stores data in geographically distributed locations so that round-trip times to retrieve data are reduced. This is achieved by having requests sent from a browser routed to a nearby CDN, thereby shortening the physical distance to where the requested data is stored. CDN's are also highly optimized to allow the fast servicing of a multitude of simultaneous requests.
+ A CDN is a caches that stores data in geographically distributed locations so that round-trip times to retrieve data are reduced. This is achieved by having requests sent from a browser routed to a nearby CDN, thereby shortening the physical distance to where the requested data is stored. CDN's are also highly optimized to allow the fast servicing of a multitude of simultaneous requests.
 
-\* The essential elements of a cache
-
-identity
-
-expiration
-
-updates
-
-\* Problems with caches
-
-stale data
-
-\*\* clearing the cache (in-memory caches)
-
-\*\* hard reload
+A CDN is more like a resource repository than a browser cache is, but it's primary function is the same: return data quickly.

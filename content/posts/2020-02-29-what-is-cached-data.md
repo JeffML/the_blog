@@ -17,21 +17,19 @@ In general terms, a cache (pronounced "cash") is a type of repository.  You can 
 
 In computer science, these "supplies" are termed resources, where the resources are scripts, code, and document content. The latter is sometimes more specifically referred to as "assets";  these include text, static data, media, and hyperlinks. 
 
-A cache's primary purpose to speed up retrieval of web page resources, speeding up page load times. Another critical aspect of a cache is to ensure that it contains relatively fresh data. This post will talk about two different ways to achieve this: memory caching and Content Delivery Networks (CDNs).
 
 
+## The distinction between a cache and other types of repositories
 
-## Difference between data cache and data repository
+A cache's primary purpose to speed up retrieval of web page resources, speeding up page load times. Another critical aspect of a cache is to ensure that it contains relatively fresh data. This post will talk about two different ways to achieve this: browser caching and Content Delivery Networks (CDNs).
 
-As an aside, repositories (as in depot) also come to play in data architectures. These types of repositories are often designed to be fast, but that is not their primary purpose. Mostly they exist to hold vast amounts of data that can be accessed in a variety of ways.  For example, Amazon Glacier is a data repository that is designed to be cheap, but not fast. A SQL database, on the other hand, is designed to be flexible, fresh, and fast, but is seldom cheap and not as fast as a most caches (which are less flexible and not as fresh).
+There are other types of repositories that come into play in web architectures; often these are designed to hold vast troves of data. They are not as focussed, though, on retrieval performance. For example, Amazon Glacier is a data repository that is designed to store data cheaply, but not retrieve it quickly.  A SQL database, on the other hand, is designed to be flexible, up-to-date, and fast, but is seldom cheap and never quite as fast as a cache.
 
+# The Browser Cache: a memory cache
 
+A memory cache stores resources locally on the computer where the browser is running from. While the browser is active, retrieved resources will be stored on the computer's physical memory (RAM), and possibly also on hard drive. Later, when the **exact** same resources are needed while revisiting a web page, the browser will pull those from the cache, not from some remote server. Since the cache is stored locally, in fast memory, those resources get fetched quicker.
 
-# Browser Cache: a memory cache
-
-A memory cache stores data on the computer where the browser is running from. While the browser is active, cached data is stored in the computer's physical memory (RAM), but this data can later be written to the computer's hard drive for retrieval between browser sessions.
-
-Because the cache is local to the computer, retrieval of data from the cache is much faster than retrieval from a remote internet server, many miles distant. The cache may store HTML, CSS, JavaScript, and media files.
+Though speed of retrieval is of the essence, so is the necessity that the resources be fresh.  A stale resource is one that is out-of-date and may no longer be valid. Part of the job of the browser is to identify which cached resources are stale, and refetch those that are.  Since a web page typically as may resources, there will usually be a mix of stale and fresh versions in the cache.
 
 As mentioned, speed of retrieval is the primary purpose of a cache, but it also must contain fresh data. In a browser, what constitutes "fresh" is determined by several criteria. First and primary, the browser looks a the URI of the resource being fetched and uses that to determine if it is in the cache.  So, the first time a user visits a website, at least some of the data on that site is unlikely to be in the cache, because the website's URI is new to the browser.  It may be that some content on the website has URIs that have been encountered before, so some of the site's data may be cached already.
 

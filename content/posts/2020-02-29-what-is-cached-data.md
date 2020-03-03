@@ -13,18 +13,13 @@ tags:
 ---
 # What's a cache?
 
-In general terms, a cache (pronounced "cash") is a type of repository. A repository contains "stuff", and is often synonymous with the word "depot". In computer science, the term cache has a more specific meaning: a repository of data designed to speed up data retrieval. I'm going to explain two types: 1) memory cache; 2) geo-located cache.  Both of these are commonly used when accessing web pages on the internet.
+In general terms, a cache (pronounced "cash") is a type of repository.  You can think of a repository as a depot of resources. In the military, this would be a supply depot, holding weapons, food, and other supplies needed to carry forward a mission.  
 
-The term "data" is used in a the broadest sense: it may mean:
+In computer science, these "supplies" are termed resources, where the resources are scripts, code, and document content. The latter is sometimes more specifically referred to as "assets";  these include text, static data, media, and hyperlinks. 
 
-* attributes and their values, 
-* streaming video, 
-* images, 
-* the textual content of a web page.
-* presentational information, such as font sizes and component sizes
-* scripts, usually JavaScript, that allows for interaction with the user 
+A cache's primary purpose to speed up retrieval of web page resources, speeding up page load times. Another critical aspect of a cache is to ensure that it contains relatively fresh data. This post will talk about two different ways to achieve this: memory caching and Content Delivery Networks (CDNs).
 
-Another critical aspect of a cache is that it contains relatively fresh data. We'll describe how this is done in the following sections.
+
 
 ## Difference between data cache and data repository
 
@@ -88,7 +83,7 @@ A hard reload forces the refetch of all resources on a page, be they content, sc
 
 ## What's clear cache and hard reload?
 
-This operation clears the entire browser cache, which has the same effect as a hard reload, but additionally causes dynamically loaded resources to be refetched as well--after all, there's nothing in the cache, obviously, so there is no choice!
+This operation clears the entire browser cache, which has the same effect as a hard reload, but additionally causes dynamically loaded resources to be refetched as well--after all, there's nothing in the cache, so there is no choice!
 
 
 

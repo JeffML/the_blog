@@ -68,6 +68,10 @@ must-revalidate commands the browser to revalidate the cached resource if it is 
 
 Cache-control directives are extensive.  A complete documented list can be found [here](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control).
 
+**E-tag**
+
+This is a token that the server sends and the browser retains until the next requests. This is only used when the browser knows that the resource's cache lifetime has expired.
+
 **Other header tags affecting caching**
 
 The header tags expires and last-modified are now obsolete, but still sent by most servers for backward compatibility with older browsers.  An example:
@@ -78,9 +82,13 @@ last-modified: Sun, 01 Mar 2020 17:59:02 GMT
 
 Here, the expires is set to the zeroth date (historically form UNIX operating system). That indicates that the resource expires immediately, just as max-age of 0 does.  Last-modified tell the browser when the latest update was made to the resource, which it can then use to decide if it should refetch it rather than use the cache value.
 
-\*\* clearing the cache (in-memory caches)
+## What's a hard reload?
 
-\*\* hard reload
+A hard reload forces the refetch of all resources on a page, be they content, scripts, stylesheets or media. Pretty much everything, right? Well, some resources are may not be explicitly included on a page. Instead, they can be fetched dynamically, usually after everything explicit has loaded.  The browser doesn't know ahead of time that this will happen, and when it does, the later requests (initiated by scripts, usually) will still use cached copies of those resources if available.
+
+## What's clear cache and hard reload?
+
+This operation clears the entire browser cache, which has the same effect as a hard reload, but additionally causes dynamically loaded resources to be refetched as well--after all, there's nothing in the cache, obviously, so there is no choice!
 
 
 

@@ -31,6 +31,14 @@ A memory cache stores resources locally on the computer where the browser is run
 
 Though speed of retrieval is of the essence, so is the necessity that the resources be fresh.  A stale resource is one that is out-of-date and may no longer be valid. Part of the job of the browser is to identify which cached resources are stale, and refetch those that are.  Since a web page typically as may resources, there will usually be a mix of stale and fresh versions in the cache.
 
+## How does the browser know what is stale in the cache?
+
+The answer is not simple, but there are two main approaches: cache-busting and request/response header tags. Before going deeper into this, let's discuss headers and HEAD requests.
+
+
+
+A browser doesn't usually know if a resource in its cache is truly stale. 
+
 As mentioned, speed of retrieval is the primary purpose of a cache, but it also must contain fresh data. In a browser, what constitutes "fresh" is determined by several criteria. First and primary, the browser looks a the URI of the resource being fetched and uses that to determine if it is in the cache.  So, the first time a user visits a website, at least some of the data on that site is unlikely to be in the cache, because the website's URI is new to the browser.  It may be that some content on the website has URIs that have been encountered before, so some of the site's data may be cached already.
 
 Most of the time, the user is visiting a site that she or he has visited many times before. Websites have a propensity to change their content, though, and so whatever was cached on previous visits may not longer be fresh. How to determine when to refresh the cache by pulling new data from the server can be somewhat complex. 

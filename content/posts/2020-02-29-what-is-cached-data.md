@@ -15,7 +15,11 @@ tags:
 
 In general terms, a [cache](https://www.merriam-webster.com/dictionary/cache) (pronounced "cash") is a type of repository.  You can think of a repository as a storage depot. In the military, this would be hold weapons, food, and other supplies needed to carry forward a mission.  
 
+![](/media/a-simplified-diagram-of-the-cold-chain-logistics-network.png "Optimization of Location–Routing Problem for Cold Chain Logistics Considering Carbon Footprint - Scientific Figure on ResearchGate. Available from: https://www.researchgate.net/figure/A-simplified-diagram-of-the-cold-chain-logistics-network_fig1_322325706 [accessed 6 Mar, 2020]")
+
 In computer science, these "supplies" are termed resources, where the resources are scripts, code, and document content. The latter is sometimes more specifically referred to as "assets" such as text, static data, media, and hyperlinks, but here I'll just use the one term _resources_.
+
+
 
 ## The distinction between a cache and other types of repositories
 
@@ -27,6 +31,8 @@ Besides caches, other repositories come into play in web architectures; often th
 
 A [memory cache](https://www.geeksforgeeks.org/cache-memory-in-computer-organization/) stores resources locally on the computer where the browser is running. While the browser is active, retrieved resources will be stored on the computer's physical memory (RAM), and possibly also on hard drive. Later, when the _exact_ same resources are needed when revisiting a web page, the browser will pull those from the cache instead of the remote server. Since the cache is stored locally, in fast memory, those resources are fetched quicker, and the page loads faster.
 
+![](/media/screenshot-2020-03-06-at-12.20.39-pm.png "Decision tree for browser cache")
+
 Speed of resource retrieval is of the essence, but so is the necessity that the resources be fresh.  A stale resource is one that is out-of-date and may no longer be valid. Part of the job of the browser is to identify which cached resources are stale, and refetch those that are.  Since a web page typically has may resources, there will usually be a mix of stale and fresh versions in the cache.
 
 ## How does the browser know what is stale in the cache?
@@ -34,6 +40,8 @@ Speed of resource retrieval is of the essence, but so is the necessity that the 
 The answer is not simple, but there are two main approaches: cache-busting and HTTP header fields. 
 
 ### cache-busting
+
+![](/media/sarah-shaffer-wazt0hgccp0-unsplash.jpg "Photo by Sarah Shaffer on Unsplash")
 
 Cache-busting is a server-side technique that ensure that the browser only fetches fresh resources. It does this indirectly. While cache-busting may sound dramatic, it really doesn't bust anything, and doesn't even touch what is already cached on a browser. All cache-busting does is change the original resource's URI in a way that makes it appear to the browser that the resource is completely new.  Since it looks new, it will not be in a browser's cache. The old version of the cached resource will still be cached, but eventually will wither and die, never to be accessed again.
 
@@ -101,6 +109,8 @@ A hard reload forces the refetch of all resources on a page, be they content, sc
 This operation clears the entire browser cache, which has the same effect as a hard reload, but additionally causes dynamically loaded resources to be fetched as well--after all, there's nothing in the cache, so there is no choice!
 
 # Content Delivery Networks: a geo-located cache
+
+![](/media/screenshot-2020-03-06-at-12.40.14-pm.png "A Content Delivery Network")
 
 A CDN is more than just a cache, but caching is one of its jobs. A CDN stores data in geographically distributed locations so that round-trip times to and from a geographically local browser are reduced. Browser requests are routed to a nearby CDN, thereby shortening the physical distance response data has to travel. CDNs also are able to handle large amounts of traffic, and provide security against some types of attacks.
 

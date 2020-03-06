@@ -49,13 +49,15 @@ Neither of these techniques will work if the old URI is directly accessed from a
 
 Every resource request come with some meta information known as the [header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers).  Conversely, every response also has header information associated with it. In some cases, the browser sees the response header values, and changes corresponding values in subsequent request headers. Among these header values are those that affect how resource caching is performed on the browser.
 
-#### HTTP HEAD requests
+#### HEAD requests and conditional requests
 
-First I should mention something about [HTTP HEAD requests](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/HEAD). A HEAD request is like a truncated GET or a POST request. Instead of requesting the complete resource, a HEAD request only requests the header fields that would be returned on a full request. The header of a resource is generally going to be much smaller (in number of total bytes) than the resource data associated with it (the "body" of the response). The header information is sufficiently informative to allow the browser to determine the freshness of the resource in it's cache.
+A [HEAD request ](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/HEAD)is like a truncated GET or a POST request. Instead of requesting the complete resource, a HEAD request only requests the header fields that would otherwise be returned on a full request. The header of a resource is generally going to be much smaller (in number of total bytes) than the resource data associated with it (the "body" of the response). The header information is sufficiently informative to allow the browser to determine the freshness of the resource in it's cache.
 
-The reason HEAD requests are sent is that it avoids having the server send a full response on every request, as response that may already be in the browser's cache. A HEAD requests is basically asking: "This is the header you sent me last time I requested this, is it still current?" If the answer is "YES", then the browser will use what's in its cache. Otherwise, it will perform a full GET or POST requests and refresh its cache with what is returned.
+The reason HEAD requests are often used to verify the validity of a server resource; i.e., does the resource still exists, and if so, has it been updated since the browser last accessed it? The browser will use what's in its cache if the HEAD request indicates the resource is valid, otherwise it will perform a full GET or POST requests and refresh its cache with what is returned.
 
-The above simplifies what can be a pretty complicated process. There's a lot of fine-tuning involved in caching, but it all is controlled through header fields, the most important of which is **cache-control.** I should mention that there's also a beast called a conditional request that foregoes the need for a separate HEAD request. I won't be covering that, but you can read up on it [here](https://developer.mozilla.org/en-US/docs/Web/HTTP/Conditional_requests).
+With a [conditional request](https://developer.mozilla.org/en-US/docs/Web/HTTP/Conditional_requests), the browser sends fields in the header describing the freshness of it's cached resource. This time, the server determines if the browser's cache is still fresh. If it is, the server returns a 304 response with just the resource's header information, and no resource body (the data). If the browser's cache is determined to be outdated, then the server will return a full 200 OK response.  This mechanism is faster than using HEAD requests, since it eliminate the possibility of having to issue two requests instead of one.
+
+The above simplifies what can be a pretty complicated process. There's a lot of fine-tuning involved in caching, but it all is controlled through header fields, the most important of which is **cache-control.**
 
 #### Cache-Control
 
@@ -69,9 +71,9 @@ cache-control: private, s-maxage=0, max-age=0, must-revalidate
 
 **s-maxage** and **max-age** are set to **0**. The **s-maxage** value is for proxy servers with caches, whereas **max-age** is intended for the browser. The effect setting **max-age** _alone_ is that the cached resource expires immediately, yet it may still be used (even though stale) during page reloads while in the same browser session. 
 
-A stale resource requires revalidation through a HEAD request, which may or may not be followed by a GET or POST request, depending on the response. The **must-revalidate** directive commands the browser to revalidate the cached resource if it is stale. Since **max-age** is set to **0** in this case, the cached resource is immediately stale once received. The combination of the two directives is equivalent to the single directive **no-cache**.  The two settings ensure that the browser always revalidates the cached resource, whether still in the same session or not.
+A stale resource may be revalidation through a HEAD request, which might be followed by a GET or POST request, depending on the response. The **must-revalidate** directive commands the browser to revalidate the cached resource if it is stale. Since **max-age** is set to **0** in this case, the cached resource is immediately stale once received. The combination of the two directives is equivalent to the single directive **no-cache**.  The two settings ensure that the browser always revalidates the cached resource, whether still in the same session or not.
 
-Cache-control directives are very extensive and at times confusing--they're a topic in their own right. A complete documented list can be found [here](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control).
+Cache-control directives are very extensive, and at times confusing--they're a topic in their own right. A complete documented list of directives can be found [here](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control).
 
 #### E-tag
 
@@ -96,8 +98,12 @@ A hard reload forces the refetch of all resources on a page, be they content, sc
 
 ### What's clear cache and hard reload?
 
-This operation clears the entire browser cache, which has the same effect as a hard reload, but additionally causes dynamically loaded resources to be refetched as well--after all, there's nothing in the cache, so there is no choice!
+This operation clears the entire browser cache, which has the same effect as a hard reload, but additionally causes dynamically loaded resources to be fetched as well--after all, there's nothing in the cache, so there is no choice!
 
 # Content Delivery Networks: a geo-located cache
 
-A CDN is more than just a cache, but caching is one of its jobs. A CDN stores data in geographically distributed locations so that round-trip times to retrieve data from browsers located nearby are reduced. A request is routed to a nearby CDN, thereby shortening the physical distance response data has to travel.
+A CDN is more than just a cache, but caching is one of its jobs. A CDN stores data in geographically distributed locations so that round-trip times to and from a geographically local browser are reduced. Browser requests are routed to a nearby CDN, thereby shortening the physical distance response data has to travel. CDNs also are able to handle large amounts of traffic, and provide security against some types of attacks.
+
+A CDN gets its resources through an Internet Exchange Point (IXP), nodes that are part of the backbone of The Internet (in caps). There are steps to take to set up request routing to go to a CDN instead of the host server. The next step is to make sure the CDN has the current content of your website.
+
+In the old days, most CDNs supported the push method: a web site would push new content to a CDN hub, which would then get distributed to geographically dispersed nodes. Nowadays, most CDNs use the caching protocols described above (or similar) to 1) download new resources; 2) refresh existing ones.  The browser still has it's cache, and none of that changes.  All a CDN does is make those transfers of new resources faster.

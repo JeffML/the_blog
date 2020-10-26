@@ -1,40 +1,41 @@
-'use strict';
+"use strict";
 
 module.exports = {
-  url: 'https://jeffamabob.com/',
-  pathPrefix: '/',
-  title: 'Blog by Jeff Lowery',
-  subtitle: 'Random projects and other curios',
-  copyright: '© All rights reserved.',
-  disqusShortname: '',
+  url: "https://jeffamabob.com/",
+  pathPrefix: "/",
+  title: "Blog by Jeff Lowery",
+  subtitle: "Random projects and other curios",
+  copyright: "© All rights reserved.",
+  disqusShortname: "",
   postsPerPage: 4,
-  googleAnalyticsId: 'UA-73379983-2',
+  googleAnalyticsId: "UA-73379983-2",
   menu: [
     {
-      label: 'Articles',
-      path: '/'
+      label: "Articles",
+      path: "/",
     },
     {
-      label: 'Tags',
-      path: '/tags'
+      label: "Tags",
+      path: "/tags",
     },
     {
-      label: 'About me',
-      path: '/pages/about'
+      label: "About me",
+      path: "/pages/about",
     },
     {
-      label: 'Contact me',
-      path: '/pages/contacts'
-    }
+      label: "Contact me",
+      path: "/pages/contacts",
+    },
   ],
   author: {
-    name: 'Jeff Lowery',
-    photo: '/photo1.jpg',
-    bio: "I'm what you might call an \"early adopter\".",
+    name: "Jeff Lowery",
+    photo: "/photo1.jpg",
+    bio: "Web application developer living in the great Pacific Northwest",
     contacts: {
-      email: 'jeff@jeffamabob.com',
-      twitter: 'jmlowery',
-      github: 'JeffML'
-    }
-  }
+      email: "jlowery2663@gmail.com", //'jeff@jeffamabob.com',
+      twitter: "folderal",
+      github: "JeffML",
+      unsplash: "folderal",
+    },
+  },
 };

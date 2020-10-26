@@ -10,6 +10,7 @@ describe('Contacts', () => {
       email: '#',
       twitter: '#',
       vkontakte: '#',
+      unsplash: '#',
       github: '#',
       rss: '#',
       telegram: '#'

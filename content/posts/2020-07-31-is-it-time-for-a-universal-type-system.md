@@ -5,9 +5,8 @@ slug: /posts/typesystem
 draft: true
 date: 2020-07-31T18:45:39.592Z
 description: >-
-  Historically, type systems have been tied to a specific language or
-  implementation. Is it possible or desirable to have a type definition language
-  that is independent of both?
+  Historically,  each language defines its own types and type systems. What
+  features would a universal type system have, and what benefits would it offer?
 category: Technical
 tags:
   - data types
@@ -15,9 +14,37 @@ tags:
   - OOP
   - classes
 ---
-## What is it?
+## Prologue
 
-* primitive data types
+I was offering some help on an open source project which took a GraphQL schema and generated viable SQL for database dialects. The question that came up, though, was what makes GraphQL so special? GraphQL has a simple yet extensible way of defining types that makes it attractive as a basis for type definitions. It also has directives, which can be used to inform a language generator on how to map GraphQL types to other language types. But is GraphQL really the best choice as a basis of defining and application's types?
+
+This question comes up again and again.  Any sufficiently complex computer application has to deal with translating one language's type system to another's. I can tick off several:
+
+* Object-Relational Mapping (ORM)
+* UML CASE code generation
+* Swagger
+* Custom XML Schema to Java classes
+* Custom C++ to SQL types
+* Castor
+* Spring Roo
+
+Type definitions and cross-language mapping was just a part of what these frameworks and technologies did, but it was a big part. Type definitions and mappings are a cross-cutting concern--so is there some meta type definition that can be useful in addressing this reoccurring need? Conceptually it seems possible, so let's explore the idea further.
+
+## What are types?
+
+Types are definitions of data primitives and data structures. They are not objects with methods, they're just data definitions. There are two classes:
+
+**Primitive Data Types**
+
+* Integer
+* Decimal
+* Character
+* Boolean
+
+That's the bare-bones. A **string** of characters could also be considered a primitive type. Arrays are a primitive data type structure, and most languages have them. Also worthy of consideration as primitives would be **date**, (including date/time) and curren**currency**, those these are 
+
+****
+
 * compound data types\
   * containers, relations, and arrays
 
@@ -67,8 +94,6 @@ TODO
 * cross-dialect bindings\
   * from a UTS definition I can generate, say, a SQL schema and also TypeScript classes, where both implementations are fully conformant to the base definition. However, I would want my TypeScript PODOs to pull and push data from the SQL database, therefore binding the two together. Assuming the SQL generated follows the paradigm of Table-per-Type (or Table-per-Type Hierarchy) then the mappings between PODO classes in TypeScript to table rows in the database should be straightforward, and this is basically how language-specific ORMs function now.\
   * the essential elements of a binding document would be a mapping between a UTS type (using some path specification as yet to be determined) and a meaningful declaration or set of directives that are specific to each dialect in the binding. Details of the dialect binding syntax would be specific to the implementation or language. 
-
-
 
 ## What are the problems?
 

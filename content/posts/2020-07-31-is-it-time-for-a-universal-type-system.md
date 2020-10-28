@@ -24,7 +24,7 @@ This question comes up again and again.  Any sufficiently complex computer appli
 * UML CASE code generation
 * Swagger
 * Custom XML Schema to Java classes
-* Custom C++ to SQL types
+* Semantic Object Model
 * Castor
 * Spring Roo
 
@@ -41,19 +41,40 @@ Types are definitions of data primitives and data structures. They are not objec
 * Character
 * Boolean
 
-That's the bare-bones. A **string** of characters could also be considered a primitive type. Arrays are a primitive data type structure, and most languages have them. Also worthy of consideration as primitives would be **date**, (including date/time) and curren**currency**, those these are 
+That's the bare-bones. A **string** of characters could also be considered a primitive type. Arrays are a primitive data type structure, and most languages have them. Also worthy of consideration as primitives would be **date**, (including date/time) and **currency**, though these have complexities in presentation and range.
 
-****
+**Compound Data Types**
 
-* compound data types\
-  * containers, relations, and arrays
+These types are containers of primitive and other compound types. They go by various names:
 
-## Why do we need it?
+* struct (C++)
+* complex type (XML Schema)
+* Plain Old Data Object (PODO, various languages)
 
-* defining types is a cross-cutting concern
-* however, most types systems are based on implementation or programming language\
-  * this means they can't be shared across implementation boundaries\
-  * hence, there's a lot of type-mapping involved (or no type validation at all)
+All can be classified as "custom" types. The programmer defines them, gives them a name, and uses instances of them in code.
+
+## What would a universal type system do?
+
+A UTS would be an abstraction, but one that can be used to generate implementations in other languages. That admittedly sounds like just another type mapping framework, but the distinction is that it is implementation language independent.
+
+Essentially, each language would share a common set of types, but implement them according to the language constraints. Let's start with a basic diagram and build upon it as we dig deeper into the concepts.
+
+<UTS with language implementations>
+
+UTS "sketches out" the types used in an application. It is useful to the data modeler modeling a business domain. There are several key element missing, though: **language defaults, language-to-language bindings,** and **custom configurations**.
+
+**Language Defaults**
+
+In order to generate types for a language, we have to know how to map a UTS type to a language types.  For the majority of cases, reasonable default types can be determined for any language. That's not going to work  in all cases, however, so there has to be a way to override those default type mappings, which I'll discuss later.
+
+**Language-to-Language Bindings**
+
+So it's one thing to map UTS types to actual language types, but in many scenarios one would want to cross language boundaries, say from JavaScript JSON "types" to SQL data definitions. Let's show that in the diagram:
+
+<UTS diagram with binding definitions>
+
+Like the UTS-to-Language mappings, bindings would have to allow for customization via configuration files.
+
 * UTS would be the root definition for types across all boundaries\
   * it would not, in itself, be complete: dialects and subdialects would need to provide specific implementation details\
   * but, reasonable and configurable defaults are practical\

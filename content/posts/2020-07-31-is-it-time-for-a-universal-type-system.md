@@ -43,6 +43,8 @@ Types are definitions of data primitives and data structures. They are not objec
 
 That's the bare-bones. A **string** of characters could also be considered a primitive type. Arrays are a primitive data type structure, and most languages have them. Also worthy of consideration as primitives would be **date**, (including date/time) and **currency**, though these have complexities in presentation and range.
 
+Other considerations have to be made: is Integer arbitrary in length? Maybe it would make sense to add an **UnboundedInteger** type to handle Big Integer representations, and assume Integer is arbitrarily bounded depending on the language default. The **string** type also might be bounded, with an unbounded variant such as **text** that can be any length. Such issues have been tackled before by existing mapping technologies, so they should provide some reasonable guidance.
+
 **Compound Data Types**
 
 These types are containers of primitive and other compound types. They go by various names:
@@ -53,9 +55,11 @@ These types are containers of primitive and other compound types. They go by var
 
 All can be classified as "custom" types. The programmer defines them, gives them a name, and uses instances of them in code.
 
-## What would a universal type system do?
+## How might a Universal Type System work?
 
 A UTS would be an abstraction, but one that can be used to generate implementations in other languages. That admittedly sounds like just another type mapping framework, but the distinction is that it is implementation language independent.
+
+<h3>Basic Components</h3>
 
 Essentially, each language would share a common set of types, but implement them according to the language constraints. Let's start with a basic diagram and build upon it as we dig deeper into the concepts.
 
@@ -73,32 +77,33 @@ So it's one thing to map UTS types to actual language types, but in many scenari
 
 <UTS diagram with binding definitions>
 
-Like the UTS-to-Language mappings, bindings would have to allow for customization via configuration files.
+**Custom Configurations**
 
-* UTS would be the root definition for types across all boundaries\
-  * it would not, in itself, be complete: dialects and subdialects would need to provide specific implementation details\
-  * but, reasonable and configurable defaults are practical\
-  * with code generation or introspection, a UTS based development approach would at the least provide rapid prototyping and proof-of-concept demonstrations, which are important when exploring new technological solutions and approaches to old problems.
-* At the base level, UTS type definitions provide simplified documentation of types used in an architecture\
-  * editors can be developed to provide linkage to (and maintenance of) dialects, sub-dialects, and their configuration values. Code generation tools would also be needed.
+Like the UTS-to-Language mappings, bindings would have to allow for customization via configuration files. Those configuration files would modify the default bindings (as predefined by UTS for various languages). The configuration might change type-to-type bindings at various scopes: by language, by module, by type, language subdialect (say a DBMS SQL variant), or other scopes TBD.
 
-## What would it be based on?
+<previous diagram, with configurations>
 
-The idea of a universal type definition language is unique, but has largely been implemented as visual schemas.  
+A universal type system really only makes sense if the default type-to-type mappings fall within the 80/20 rule: 80% of the defaults mappings are reasonable, and 20% need modification.  For primitive types, this would often be the case for a specific language; however, in a language-to-language binding, range out-of-bounds conditions could occur. 
 
-* UML
-* SOM
-* ???
+<h3>Benefits</h3>
 
-Visual, diagrammatic approached to type definition and code generation have not demonstrated improved productivity in development organizations.  A large, complex diagram is just about has hard to understand and follow as code. That's not to say they are useless, but beyond a certain level of complexity they don't seem to help.
+At the very least, UTS would offer rapid prototyping across different language implementations, or for proof-of-concept demonstrations. At a higher level, it can define types used in a domain without getting drawn into precise details too early in the process: just go with the defaults, and adjust later when they don't work.
+
+Editors could be adopted to UTS to provide linkage to (and maintenance of) dialects, sub-dialects, and their configuration values. 
 
 ## How would it be implemented?
 
-One approach would be to adopt an existing type system and simplify or extend it to be a UTS. I like GraphQL's type definition language, for instance, and I can see it being a basis for the UTS, minus the operational aspects such as API service points (queries, mutations, and subscriptions) and type resolvers.  
+It would make sense to look at existing type definition languages and see if they could be adopted. I mentioned GraphQL before, and I think it is a candidate to base off of. The problem with current approaches to using GraphQL to generate code in other languages is that it invariably relies on directives to handle the find details of mapping. The issue is that directives tightly bind the GraphQL schema to a specific language implementation. 
 
-### Directives and tight binding
+Rather than use inline directives, the UTS proposed here would handle UTS-to-language and language-to-language bindings outside of the UTS schema itself.
 
-TODO
+**Should UTS be a graphical standard, like UML?**
+
+Visual, diagrammatic approaches to schemas have not demonstrated improved productivity in development organizations (in my personal experience).  A large, complex schema diagram is just about has hard to understand and follow as a text-based schema with an editor that knows how to navigate it. Generating a visual representation of all or part of a UTS schema would in many cases be helpful, though, so that capability should exist.
+
+A UTS engine might generate code or interpret schemas at runtime. In the latter case , schemas would be interpreted, compatible data instances created on-the-fly, and runtime validation of type-to-type mappings can be performed (perhaps even at a static code analysis level).  
+
+
 
 ## The Elements of UTS
 

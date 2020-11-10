@@ -1,6 +1,6 @@
 ---
 template: post
-title: Is it time for a universal type system?
+title: Is it practical to have a universal type system?
 slug: /posts/typesystem
 draft: true
 date: 2020-07-31T18:45:39.592Z
@@ -16,9 +16,13 @@ tags:
 ---
 ## Prologue
 
-I was offering some help on an open source project which took a GraphQL schema and generated viable SQL for database dialects. The question that came up, though, was what makes GraphQL so special? GraphQL has a simple yet extensible way of defining types that makes it attractive as a basis for type definitions. It also has directives, which can be used to inform a language generator on how to map GraphQL types to other language types. But is GraphQL really the best choice as a basis of defining and application's types?
+I recently made an attempt to help some open source project that took a GraphQL schema and generated viable SQL for various database dialects. The idea was that you'd write your GraphQL API, which includes type definitions, then generate functions that use dialect-specific DDL and DML to perform the underlying CRUD operations.  Similar to ORM or Swagger or countless other language-to-datastore mappings.
 
-This question comes up again and again.  Any sufficiently complex computer application has to deal with translating one language's type system to another's. I can tick off several:
+GraphQL has a simple yet extensible way of defining types in a declarative way. With support for directives, tweaks can be made to the GQL schema to inform a language generator (or validation engine) how to map GraphQL types to other language types. However, that binds the schema tightly to an SQL implementation, making it hard to later switch to something like another SQL database or even a NoSQL DB. On top of that, this tool was generating TypeScript, but what if the desired implementation language was Java or Python? Not everything has to run in a browser. 
+
+## Deja vu all over again
+
+Any sufficiently complex computer application has dealt with converting from one type system to another. I can tick off several:
 
 * Object-Relational Mapping (ORM)
 * UML CASE code generation
@@ -28,11 +32,11 @@ This question comes up again and again.  Any sufficiently complex computer appli
 * Castor
 * Spring Roo
 
-Type definitions and cross-language mapping was just a part of what these frameworks and technologies did, but it was a big part. Type definitions and mappings are a cross-cutting concern--so is there some meta type definition that can be useful in addressing this reoccurring need? Conceptually it seems possible, so let's explore the idea further.
+Most of these technologies aren't focused on type definitions, but they do play a big role, and some of these either support data mapping or form the basis of a larger data mapping framework. So it seems like types, type definitions, and data mapping taken together are a cross-cutting concern in many applications. Can the concept be abstracted away in some fashion?
 
-## What are types?
+## Primitive and compound data types
 
-Types are definitions of data primitives and data structures. They are not objects with methods, they're just data definitions. There are two classes:
+Types are definitions of data primitives and data structures. They are not objects with methods (okay, maybe getter and setter methods would be the exception). They are just data type definitions. There are two classes.
 
 **Primitive Data Types**
 
@@ -41,9 +45,9 @@ Types are definitions of data primitives and data structures. They are not objec
 * Character
 * Boolean
 
-That's the bare-bones. A **string** of characters could also be considered a primitive type. Arrays are a primitive data type structure, and most languages have them. Also worthy of consideration as primitives would be **date**, (including date/time) and **currency**, though these have complexities in presentation and range.
+These are the bare-bones, and arguably not comprehensive enough. For instance a **string** of characters could also be considered a primitive type. Arrays are a primitive data type structure, and most languages support them. A more extensive primitive type set might include **date**, (including date/time) and **currency**, though these have complexities in presentation and range. Similarly with **float**, which could be argued is a formatted **decimal**, with storage considerations in the language implementation. 
 
-Other considerations have to be made: is Integer arbitrary in length? Maybe it would make sense to add an **UnboundedInteger** type to handle Big Integer representations, and assume Integer is arbitrarily bounded depending on the language default. The **string** type also might be bounded, with an unbounded variant such as **text** that can be any length. Such issues have been tackled before by existing mapping technologies, so they should provide some reasonable guidance.
+Other considerations crop up: is **Integer** arbitrary in length? In the most abstract sense, no: it's just a mathematical concept. Yet in implementation it is bounded in some fashion, either by the implementing language(s) or by computer memory (e.g., BigInt in JavaScript). The same issue arises with **string** and any array: there is a practical maximum length, but in concept it's not of concern. More on this later.
 
 **Compound Data Types**
 
@@ -53,11 +57,13 @@ These types are containers of primitive and other compound types. They go by var
 * complex type (XML Schema)
 * Plain Old Data Object (PODO, various languages)
 
-All can be classified as "custom" types. The programmer defines them, gives them a name, and uses instances of them in code.
+All can be classified as "custom" types. The programmer defines them, gives the definition a name, and uses instances of them in code.
 
-## How might a Universal Type System work?
+## Aspects of Universal Type System
 
-A UTS schema does not define an implementation, but can be used to generate implementations in other languages.Yes, it sounds like another type-to-type mapping framework, but UTS is language independent. Therefore, it describes data types used in a domain, but not in terms of how it is implemented in one more languages. It is language agnostic.
+A UTS schema does not define an implementation, it is purely conceptual. So an integer is just some whole number, and a string is a bunch of characters. It sketches out the kinds of data used in a domain. It brings to benefits: 1) as a concept, it doesn't get bogged down into implementation detail; 2) as a set of definitions, they can reasonably be represented in other languages. Those languages may introduce constraints, but that's another topic to address later.
+
+From here on I will use the term "dialect" instead of "language", as well as "subdialect" to mean a variation of a language. I acknowledge the following to be "fuzzy", and that's fine. This article is intended as a thought piece and not a detailed outline with all issues worked out in or even accounted for.
 
 <h3>Basic Components</h3>
 
@@ -65,7 +71,9 @@ The chief elements of a UTS schema are as follows:
 
 <h4>The base definition</h4>
 
-This is the core of UTS: a schema defining named types using primitives and composites. It is much like any  hierarchical schema, and similar to relational database table and columns that follow a Table-per-Type structure. There would not support type inheritance: UTS is not designed to classify types in terms of is-a definitions. UTS would support type extension as a shorthand convenience to reduce redundancy in definitions, but extension does not imply is-a classification.
+This is the core of UTS: a schema defining named types using primitives and composites. In my mind's eye it would look similar to a GraphQL typedef schema. As a graph-structured schema, it is also not unlike a relational database schema where table and columns follow a Table-per-Type structure. 
+
+Type inheritance is not directly supported, because UTS is not conceived as a way to classify types in terms of is-a relationships. UTS would support type extension as a convenient shorthand to reduce redundancy in definitions, but extension would not imply is-a classification, though a language implementation could interpret it as such.
 
 <h4>Domain extensions</h4>
 
@@ -73,21 +81,21 @@ A means of extending the UTS language would allow for things like the definition
 
 <h4>Language Extensions</h4>
 
-These extensions determine the default implementations for data representation in a language, such as TypeScript or SQL databases. In addition, subdialect extensions would allow for refinement of dialects. For instance, a SQL dialect extension would have subdialects, each specific a particular RDBMS.
+These extensions determine the default implementations for data representation in a dialect, such as TypeScript or SQL. In addition, subdialect extensions would allow for refinement of dialects. For instance, a SQL dialect extension would have subdialects, each specific a particular RDBMS.
 
-Essentially, each language would share a common set of types, but implement them according to the language constraints. Let's start with a basic diagram and build upon it as we dig deeper into the concepts.
+Essentially, each language would share a common set of types, but implement them according to the language constraints. Let's start with a basic diagram and build upon it further on.
 
 <UTS with language extensions>
 
-UTS base schema "sketches out" the types used in an application. It is useful to the data modeler modeling a business domain. There are several key element missing, though: **language defaults, language-to-language bindings,** and **custom configurations**.
+UTS base schema "sketches out" the types used in an application. It is useful to the data modeler modeling a business domain for the first time. There are several key element missing, though: **dialect defaults, dialect-to-dialect bindings,** and **custom configurations**.
 
-**Language Defaults**
+**Dialect Defaults**
 
-In order to generate types for a language, we have to know how to map a UTS type to a language types.  For the majority of cases, reasonable default types can be determined for any language. That's not going to work  in all cases, however, so there has to be a way to override those default type mappings, which I'll discuss later.
+In order to generate types for a dialect, we have to know how to map a UTS type to dialect types.  For the majority of cases, reasonable default types can be determined for any dialect. That's not going to work in all cases (80/20 rule hopefully applies),  so there has to be a way to override those default type mappings (see below).
 
-**Language-to-Language Bindings**
+**Dialect-to-Dialect Bindings**
 
-So it's one thing to map UTS types to actual language types, but in many scenarios one would want to cross language boundaries, say from JavaScript JSON "types" to SQL data definitions. Let's show that in the diagram:
+So it's one thing to map UTS type definitions to actual language types, but in many scenarios one would want to cross language boundaries, say from JavaScript JSON "types" to SQL data definitions. Let's show that in the diagram:
 
 <UTS diagram with binding definitions>
 

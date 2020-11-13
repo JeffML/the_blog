@@ -71,9 +71,9 @@ The chief elements of a UTS schema are as follows:
 
 <h4>The base definition</h4>
 
-This is the core of UTS: a schema defining named types using primitives and composites. In my mind's eye it would look similar to a GraphQL typedef schema. As a graph-structured schema, it is also not unlike a relational database schema where table and columns follow a Table-per-Type structure. 
+This is the core of UTS: a schema defining named types using primitives and composites. It may look similar to a GraphQL typedef schema. As a graph-structured schema, it is not unlike a relational database schema where table and columns follow a Table-per-Type structure. 
 
-Type inheritance is not directly supported, because UTS is not conceived as a way to classify types in terms of is-a relationships. UTS would support type extension as a convenient shorthand to reduce redundancy in definitions, but extension would not imply is-a classification, though a language implementation could interpret it as such.
+Type inheritance is not directly supported, because UTS is not conceived as a way to classify types in terms of is-a relationships. UTS would support type extension as a convenient shorthand to reduce redundancy in definitions, but extension would not imply is-a classification, though a dialect implementation could interpret it as such.
 
 <h4>Domain extensions</h4>
 
@@ -85,37 +85,35 @@ These extensions determine the default implementations for data representation i
 
 Essentially, each language would share a common set of types, but implement them according to the language constraints. Let's start with a basic diagram and build upon it further on.
 
-<UTS with dialect extensions>
+![](/media/schema-with-dialects-and-bindings-1-.png)
 
-UTS base schema "sketches out" the types used in an application. It is useful to the data modeler modeling a business domain for the first time. There are several key element missing, though: **dialect defaults, dialect-to-dialect bindings,** and **custom configurations**.
+UTS base schema "sketches out" the types used in an application. It is useful to the data modeler modeling a business domain for the first time. There are several key elements yet to be discussed: **dialect defaults, dialect-to-dialect bindings,** and **custom configurations**.
 
 **Dialect Defaults**
 
-In order to generate types for a dialect, we have to know how to map a UTS type to dialect types.  For the majority of cases, reasonable default types can be determined for any dialect. That's not going to be sufficient in all cases, so there needs to be a way to override those default type mappings (see below).
+In order to generate types for a dialect, we have to know how to map a UTS type to dialect types.  For the majority of cases, reasonable default types can be determined for any dialect. That's not going to be sufficient in all cases, so there needs to be a way to override those default type mappings.
 
 **Dialect-to-Dialect Bindings**
 
-So it's one thing to map UTS type definitions to actual language types, but in many scenarios one would want to cross language boundaries, say from JavaScript JSON "types" to SQL data definitions. Let's show that in the diagram:
+So it's one thing to map UTS type definitions to actual language types, but in many scenarios one would want to cross language boundaries, say from JavaScript JSON "types" to SQL data definitions. 
 
-<UTS diagram with binding definitions>
+![](/media/dialect-bindings-diagram.png)
+
+A default Binding Schema would be generated (or interpreted) by a UTS-compatible framework. The bindings can be modified by another set of definitions as determined by the data modeler. The binding document in turn can be used to generate mappings between types in Dialects 1 & 2. 
+
+There is considerable detail and complexity that would have to be worked out concerning such a data-mapping implementation between arbitrary dialects, but each mapping would in concept be similar to Object-Relational-Mapping or JavaScript object mapping to/from REST API POST content and result definitions.
 
 **Custom Configurations**
 
 Like the UTS-to-Language mappings, bindings would have to allow for customization via configuration files. Those configuration files would modify the default bindings (as predefined by UTS for various languages). The configuration might change type-to-type bindings at various scopes: by language, by module, by type, language subdialect (say a DBMS SQL variant), or other scopes TBD.
 
-<previous diagram, with configurations>
+![](/media/binding-and-config-diagram.png)
 
-A universal type system really only makes sense if the default type-to-type mappings fall within the 80/20 rule: 80% of the defaults mappings are reasonable, and 20% need modification.  For primitive types, this would often be the case for a specific language; however, in a language-to-language binding, range out-of-bounds conditions could occur. 
+A universal type system really only makes sense if the default type-to-type mappings fall within the 80/20 rule: 80% of the defaults mappings are reasonable, and 20% need modification.  For primitive types, this would often be the case for a specific language; however, in a language-to-language binding, range out-of-bounds conditions could occur.  
 
-<h4>Cross-dialect bindings</h4>
+<h4>An example outline of operation</h4>
 
-It's one thing to generate multiple language-specific data structure from a single UTS schema, but it is also often necessary to have two or more generated data structures in different languages map to one another. A binding specification defines those mappings, can it is assume a default binding can be generated by UTS.
-
-The essential elements of a binding document would be a mapping between a UTS type (likely using some path specification as yet to be determined) and a meaningful declaration or set of directives that are specific to each dialect in the binding. Details of the dialect binding syntax would be specific to the implementation or language. 
-
-**Example**
-
-From a UTS schema, both a SQL schema and TypeScript PODO definitions are created. Both are fully conformant to the UTS base definition (plus any extensions). The TypeScript and database are to talk to each other, so that the TypeScript PODOs have mechanism to pull and push data from the SQL database. The TypeScript PODOs and SQL Tables (table-by-type) are said to be bound. This is similar to how ORMs work now.
+From a UTS schema, both a SQL schema and TypeScript PODO definitions are created. Both are fully conformant to the UTS base definition (plus any domain extensions). The TypeScript and database are to talk to each other, so that the TypeScript PODOs have mechanism to pull and push data from the SQL database. The TypeScript PODOs and SQL Tables (table-by-type) are said to be bound. 
 
 <h3>Benefits</h3>
 
@@ -127,20 +125,14 @@ UTS would offer:
 
 Editors could be adopted to UTS to provide linkage to (and maintenance of) dialects, sub-dialects, and their configuration values. 
 
-## How would it be implemented?
+## Further details
 
-It would make sense to look at existing type definition languages and see if they could be adopted. I mentioned GraphQL before, and I think it is a candidate to base off of. The problem with current approaches to using GraphQL to generate code in other languages is that it invariably relies on directives to handle the find details of mapping. The issue is that directives tightly bind the GraphQL schema to a specific language implementation. 
+It would make sense to look at existing type definition languages and see if they could be adopted. I mentioned GraphQL, but other schema languages are viable base candidates. A key concept it to avoid tight binding of schema to implementation (as happens with GraphQL directives and Java annotations), and instead keep those separate concerns in separate definition files, apart from the schema itself.
 
-Rather than use inline directives, the UTS proposed here would handle UTS-to-language and language-to-language bindings outside of the UTS schema itself.
+A UTS engine might generate code or interpret schemas at runtime, or both. Information from a UTS schema can be used to enforce constraints that can't be easily handled by generated code, such as associative data constraints.
 
-**Should UTS be a graphical standard, like UML?**
-
-Visual, diagrammatic approaches to schemas have not demonstrated improved productivity in development organizations (in my personal experience).  A large, complex schema diagram is just about has hard to understand and follow as a text-based schema with an editor that knows how to navigate it. Generating a visual representation of all or part of a UTS schema would in many cases be helpful, though, so that capability should exist.
-
-A UTS engine might generate code or interpret schemas at runtime. In the latter case , schemas would be interpreted, compatible data instances created on-the-fly, and runtime validation of type-to-type mappings can be performed (perhaps even at a static code analysis level).  
-
-## What are the problems?
+## Problems? There are always problems.
 
 The biggest issue with code generation has traditionally be performance and maintenance.  UTS would not offer a solution in that regard.  It's purpose it to get from concept to functional prototype in a rapidly, but at the same time provide a framework implementation that can be customized for performance and chosen technology platform. Reverse-engineering, versioning, and data migration issues are difficult problems that don't lend themselves to easy solutions, but they are solvable. Whether the complexity of the solutions lend themselves to a UTS-based framework would remain to be seen.
 
-## My background
+##

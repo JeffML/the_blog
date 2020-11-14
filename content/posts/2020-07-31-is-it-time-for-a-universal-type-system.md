@@ -16,27 +16,27 @@ tags:
 ---
 ## Prologue
 
-I recently made an attempt to help some open source project that took a GraphQL schema and generated viable SQL for various database dialects. The idea was that you'd write your GraphQL API, which includes type definitions, then generate functions that use dialect-specific DDL and DML to perform the underlying CRUD operations.  Similar to ORM or Swagger or countless other language-to-datastore mappings.
+I recently made an attempt to help some open source project that took a [GraphQL schema](https://www.apollographql.com/docs/apollo-server/schema/schema/) and generated viable SQL for various database dialects. The idea was that you'd write your GraphQL API, which includes type definitions, then generate functions that use SQL dialect-specific DDL and DML to perform the underlying [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) operations.  Similar to [ORM](https://en.wikipedia.org/wiki/Object%E2%80%93relational_mapping) or [Swagger](https://medium.com/swlh/restful-api-documentation-made-easy-with-swagger-and-openapi-6df7f26dcad) or countless other language-to-datastore mappings.
 
-GraphQL has a simple yet extensible way of defining types in a declarative way. With support for directives, tweaks can be made to the GQL schema to inform a language generator (or validation engine) how to map GraphQL types to other language types. However, that binds the schema tightly to an SQL implementation, making it hard to later switch to something like another SQL database or even a NoSQL DB. On top of that, this tool was generating TypeScript, but what if the desired implementation language was Java or Python? Not everything has to run in a browser. 
+GraphQL has a simple yet extensible way of defining types in a declarative way. With support for [directives](https://graphql.org/learn/queries/#directives), tweaks can be made to the schema to inform a language generator (or validation engine) how to map GraphQL types to other language types, but that does tend to bind the schema to a particular database's SQL dialect or schema. Any GraphQL-based code generator is also likely to support only one particular language to store and retrieve data from a database, such as JavaScript.
 
 ## Deja vu all over again
 
-Any sufficiently complex computer application has dealt with converting from one type system to another. I can tick off several:
+Any sufficiently complex computer application has dealt with converting from one set of types defined in one language to a similar set of types in another. I can tick off several:
 
 * Object-Relational Mapping (ORM)
 * UML CASE code generation
 * Swagger
-* Custom XML Schema to Java classes
+* XML Schema/Java PODO binding
 * Semantic Object Model
 * Castor
 * Spring Roo
 
-Most of these technologies aren't focused on type definitions, but they do play a big role, and some of these either support data mapping or form the basis of a larger data mapping framework. So it seems like types, type definitions, and data mapping taken together are a cross-cutting concern in many applications. Can the concept be abstracted away in some fashion?
+Most of these technologies aren't focused on data type definitions, though that plays a big part; some also support data mapping mechanisms or are part of an larger data mapping framework. It can said that types, type definitions, and data mapping taken together are of concern in many applications. Can these concepts be abstracted away from specific implementation details?
 
 ## Primitive and compound data types
 
-Types are definitions of data primitives and data structures. They are not objects with methods (okay, maybe getter and setter methods would be the exception). They are just data type definitions. There are two classes.
+Types are definitions of data primitives and data structures. They are not objects with methods (other than optional [getters and setters](https://www.w3schools.com/java/java_encapsulation.asp)). They are just data type definitions. There are two classes.
 
 **Primitive Data Types**
 
@@ -45,9 +45,9 @@ Types are definitions of data primitives and data structures. They are not objec
 * Character
 * Boolean
 
-These are the bare-bones, and arguably not comprehensive enough. For instance a **string** of characters could also be considered a primitive type. Arrays are a primitive data type structure, and most languages support them. A more extensive primitive type set might include **date**, (including date/time) and **currency**, though these have complexities in presentation and range. Similarly with **float**, which could be argued is a formatted **decimal**, with storage considerations in the language implementation. 
+This list is arguably not comprehensive enough. For instance, a **string** of characters might also be considered a primitive type, since arrays are a primitive data type structure, and most languages support them. A more extensive primitive type set might include **date** and **currency**. The **float** type is sort of the same as a **decimal** in concept, but not in implementation. 
 
-Other considerations crop up: is **Integer** arbitrary in length? In the most abstract sense, no: it's just a mathematical concept. Yet in implementation it is bounded in some fashion, either by the implementing language(s) or by computer memory (e.g., BigInt in JavaScript). The same issue arises with **string** and any array: there is a practical maximum length, but in concept it's not of concern. More on this later.
+Also, is i**nteger** arbitrary in length? In the most abstract sense, no: it's just a mathematical concept. Yet in implementation it is bounded in some fashion, either by the implementing language or by computer memory (e.g., BigInt in JavaScript). The same issue arises with **string** and any array: there is a practical maximum length. Again, a universal type system is about concepts, not implementation details, so decisions as to what is **primitive** and what is not should be decided on those terms.
 
 **Compound Data Types**
 
@@ -79,9 +79,9 @@ Type inheritance is not directly supported, because UTS is not conceived as a wa
 
 A means of extending the UTS language would allow for things like the definitions of additional primitive types, or value ranges for types defined in the base definition. It may also define cardinality constraints between a type and it's child types. These are not language-specific constraints (though they incidentally could be), but constraints determined by the domain.
 
-<h4>Dialect Extensions</h4>
+<h4>Dialect Configurations</h4>
 
-These extensions determine the default implementations for data representation in a dialect, such as TypeScript or SQL. In addition, subdialect extensions would allow for refinement of dialects. For instance, a SQL dialect extension would have subdialects, each specific a particular RDBMS.
+These determine the default implementations for data representation in a dialect, such as TypeScript or SQL. In addition, subdialect extensions would allow for refinement of dialects. For instance, a SQL dialect extension would have subdialects, each specific a particular RDBMS.
 
 Essentially, each language would share a common set of types, but implement them according to the language constraints. Let's start with a basic diagram and build upon it further on.
 

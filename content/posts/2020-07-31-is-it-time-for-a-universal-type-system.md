@@ -63,7 +63,7 @@ All can be classified as "custom" types. The programmer defines them, gives the 
 
 A UTS schema does not define an implementation, it is purely conceptual. So an integer is just some whole number, and a string is a bunch of characters. It sketches out the kinds of data used in a domain. It brings to benefits: 1) as a concept, it doesn't get bogged down into implementation detail; 2) as a set of definitions, they can reasonably be represented in other languages. Those languages may introduce constraints, but that's another topic to address later.
 
-From here on I will use the term "dialect" instead of "language", as well as "subdialect" to mean a variation of a language. I acknowledge the following to be "fuzzy", and that's fine. This article is intended as a thought piece and not a detailed outline with all issues worked out in or even accounted for.
+From here on I will use the term "dialect" instead of "language", as well as "subdialect" to mean a variation of a language. I acknowledge the following ideas to be "fuzzy", and that's fine. This article is intended as a thought piece and not a detailed outline with all issues worked out in or even accounted for.
 
 <h3>Basic Components</h3>
 
@@ -101,7 +101,7 @@ So it's one thing to map UTS type definitions to actual language types, but in m
 
 A default Binding Schema would be generated (or interpreted) by a UTS-compatible framework. The bindings can be modified by another set of definitions as determined by the data modeler. The binding document in turn can be used to generate mappings between types in Dialects 1 & 2. 
 
-There is considerable detail and complexity that would have to be worked out concerning such a data-mapping implementation between arbitrary dialects, but each mapping would in concept be similar to Object-Relational-Mapping or JavaScript object mapping to/from REST API POST content and result definitions.
+There is considerable detail and complexity that would have to be worked out concerning data-mapping implementation between arbitrary dialects, but each mapping would in concept be similar to Object-Relational-Mapping or JavaScript object mapping to/from REST API POST content and result definitions.
 
 **Custom Configurations**
 

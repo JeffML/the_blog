@@ -2,7 +2,7 @@
 template: post
 title: Is a universal type system practical?
 slug: /posts/typesystem
-draft: true
+draft: false
 date: 2020-07-31T18:45:39.592Z
 description: >-
   Historically,  each language defines its own types and type systems. What
@@ -72,15 +72,13 @@ GraphQL has simplified cardinality constraints, and I think UTS would also. Thos
 
 <h3>Basic Components</h3>
 
-From here on I will use the term "dialect" instead of "language", as well as "subdialect" to mean a variation of a language. I acknowledge the following ideas to be "fuzzy", and that's fine. This article is intended as a thought piece and not a detailed outline with all issues worked out in or even accounted for.
-
-The chief elements of a UTS schema are as follows:
+From here on I will use the term "dialect" instead of "language", as well as "subdialect" to mean a variation of a language. There is plenty of fuzziness in the ideas described below, as this article is intended as a thought piece and not as a detailed implementation guideline with all issues worked out in (or even accounted for).
 
 <h4>The base definition</h4>
 
-This is the core of UTS: a schema defining named types using primitives and composites. It may look similar to a GraphQL typedef schema. As a graph-structured schema, it is not unlike a relational database schema where table and columns follow a Table-per-Type structure. 
+This is the core of UTS: a schema defining named types using primitives and composites. It might bear similarity to a GraphQL typedef schema. Since it defines a graph of relations between types, it is not unlike a relational database schema where table and columns follow a [Table-per-Type](https://entityframework.net/tpt) structure. 
 
-Type inheritance is not directly supported, because UTS is not conceived as a way to classify types in terms of is-a relationships. UTS would support type extension as a convenient shorthand to reduce redundancy in definitions, but extension would not imply is-a classification, though a dialect implementation could interpret it as such.
+Type inheritance is not directly supported, because UTS is not conceived as a way to classify types in terms of is-a relationships. UTS might support type extension as a convenient shorthand to reduce redundancy in definitions, but extension would not imply is-a classification, though a dialect implementation could interpret it as such.
 
 <h4>Domain extensions</h4>
 

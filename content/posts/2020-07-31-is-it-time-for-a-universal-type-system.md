@@ -1,6 +1,6 @@
 ---
 template: post
-title: Is it practical to have a universal type system?
+title: Is a universal type system practical?
 slug: /posts/typesystem
 draft: true
 date: 2020-07-31T18:45:39.592Z
@@ -14,15 +14,13 @@ tags:
   - OOP
   - classes
 ---
-## Prologue
+I recently made some minor contributions to an open source project that took a [GraphQL schema](https://www.apollographql.com/docs/apollo-server/schema/schema/) as its input and generated viable SQL dialects for various databases. Since I have worked with GraphQL quite a bit in the past I liked the idea of fleshing out a GraphQL API, which includes type definitions, and generating TypeScript functions that invoked SQL to perform underlying [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) operations.  Not dissimilar to how an [ORM](https://en.wikipedia.org/wiki/Object%E2%80%93relational_mapping) maps Java classes to SQL statements, or how [Swagger](https://medium.com/swlh/restful-api-documentation-made-easy-with-swagger-and-openapi-6df7f26dcad)-based code generators provide a framework generated from an [REST API](https://restfulapi.net/) definition.
 
-I recently made an attempt to help some open source project that took a [GraphQL schema](https://www.apollographql.com/docs/apollo-server/schema/schema/) and generated viable SQL for various database dialects. The idea was that you'd write your GraphQL API, which includes type definitions, then generate functions that use SQL dialect-specific DDL and DML to perform the underlying [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) operations.  Similar to [ORM](https://en.wikipedia.org/wiki/Object%E2%80%93relational_mapping) or [Swagger](https://medium.com/swlh/restful-api-documentation-made-easy-with-swagger-and-openapi-6df7f26dcad) or countless other language-to-datastore mappings.
-
-GraphQL has a simple yet extensible way of defining types in a declarative way. With support for [directives](https://graphql.org/learn/queries/#directives), tweaks can be made to the schema to inform a language generator (or validation engine) how to map GraphQL types to other language types, but that does tend to bind the schema to a particular database's SQL dialect or schema. Any GraphQL-based code generator is also likely to support only one particular language to store and retrieve data from a database, such as JavaScript.
+GraphQL has a simple yet extensible way of defining data types in a declarative way. These data types are used to define and validate the structure of HTTP POST calls to a server, where the POST body is JSON. There is also support for [directives](https://graphql.org/learn/queries/#directives) which allows tweaks can be made to the schema to inform a language generator (or validation engine) how to map GraphQL types to other language types. The drawback is that directives bind the GraphQL schema to a particular language or data store. 
 
 ## Deja vu all over again
 
-Any sufficiently complex computer application has dealt with converting from one set of types defined in one language to a similar set of types in another. I can tick off several:
+Any sufficiently complex computer application has dealt with converting from one set of types defined in one language to a similar set of types in another. Off the top of my head:
 
 * Object-Relational Mapping (ORM)
 * UML CASE code generation
@@ -32,40 +30,49 @@ Any sufficiently complex computer application has dealt with converting from one
 * Castor
 * Spring Roo
 
-Most of these technologies aren't focused on data type definitions, though that plays a big part; some also support data mapping mechanisms or are part of an larger data mapping framework. It can said that types, type definitions, and data mapping taken together are of concern in many applications. Can these concepts be abstracted away from specific implementation details?
+Defining data types and generating language-to-language mappings are a core part of these technologies, so this type of problem repeatedly crops up. It made me wonder if the general concept can be abstracted away from specific implementation details. What follows is a general outline of what such an abstraction might look like, and how it would operate.
 
 ## Primitive and compound data types
 
-Types are definitions of data primitives and data structures. They are not objects with methods (other than optional [getters and setters](https://www.w3schools.com/java/java_encapsulation.asp)). They are just data type definitions. There are two classes.
+A type is a named data structure definition. Data of a type must conform to the definition. I'm using the word "structure" in this case to refer to primitive data types and compound data types. 
 
 **Primitive Data Types**
 
+These correspond to data stored atomically in memory. Most languages support the following:
+
 * Integer
 * Decimal
+* Float
 * Character
 * Boolean
 
-This list is arguably not comprehensive enough. For instance, a **string** of characters might also be considered a primitive type, since arrays are a primitive data type structure, and most languages support them. A more extensive primitive type set might include **date** and **currency**. The **float** type is sort of the same as a **decimal** in concept, but not in implementation. 
-
-Also, is i**nteger** arbitrary in length? In the most abstract sense, no: it's just a mathematical concept. Yet in implementation it is bounded in some fashion, either by the implementing language or by computer memory (e.g., BigInt in JavaScript). The same issue arises with **string** and any array: there is a practical maximum length. Again, a universal type system is about concepts, not implementation details, so decisions as to what is **primitive** and what is not should be decided on those terms.
+Some might include **Currency** and **Date**. 
 
 **Compound Data Types**
 
-These types are containers of primitive and other compound types. They go by various names:
+A compound type is defined as a container for primitive and other compound types. They go by various names:
 
 * struct (C++)
+* array
 * complex type (XML Schema)
 * Plain Old Data Object (PODO, various languages)
 
-All can be classified as "custom" types. The programmer defines them, gives the definition a name, and uses instances of them in code.
+The programmer defines them, gives the definition a name, and uses instances of them in code. Unlike primitives, which are defined by the language, compound types are "custom" types.
 
 ## Aspects of Universal Type System
 
-A UTS schema does not define an implementation, it is purely conceptual. So an integer is just some whole number, and a string is a bunch of characters. It sketches out the kinds of data used in a domain. It brings to benefits: 1) as a concept, it doesn't get bogged down into implementation detail; 2) as a set of definitions, they can reasonably be represented in other languages. Those languages may introduce constraints, but that's another topic to address later.
+A UTS schema, which defines primitive and compound types, does not dictate an implementation. In that sense, it is a purely conceptual and nonspecific description of types used in a [domain](https://en.wikipedia.org/wiki/Domain_(software_engineering)). So an integer in UTS is whole number without constraint; likewise, a string is a contiguous set of characters without a fixed length. So, a UTS schema sketches out the kinds of data used in a domain, but it is not sufficient for an implementation on its own. 
 
-From here on I will use the term "dialect" instead of "language", as well as "subdialect" to mean a variation of a language. I acknowledge the following ideas to be "fuzzy", and that's fine. This article is intended as a thought piece and not a detailed outline with all issues worked out in or even accounted for.
+GraphQL has simplified cardinality constraints, and I think UTS would also. Those constraints can be tightened in the chosen target language(s) of the implementation.
+
+<h3>So what good is it?</h3>
+
+* as a conceptual model, it doesn't get bogged down into implementation detail and therefore focuses on what is important to the domain expert, e.g. the business
+* as a set of type definitions, it can be represented in other languages, which may introduce constraints of their own. Additional constraints can be defined by the developer via configuration.
 
 <h3>Basic Components</h3>
+
+From here on I will use the term "dialect" instead of "language", as well as "subdialect" to mean a variation of a language. I acknowledge the following ideas to be "fuzzy", and that's fine. This article is intended as a thought piece and not a detailed outline with all issues worked out in or even accounted for.
 
 The chief elements of a UTS schema are as follows:
 
@@ -119,7 +126,7 @@ From a UTS schema, both a SQL schema and TypeScript PODO definitions are created
 
 UTS would offer:
 
-1.  rapid prototyping across different dialect implementations, useful for proof-of-concept demonstrations or for informing a base implementation. 
+1. rapid prototyping across different dialect implementations, useful for proof-of-concept demonstrations or for informing a base implementation. 
 2. deliver an abstract schema that encapsulates domain concepts without bogging down in overly precise implementation details
 3. reasonable cross-language type-to-type default mappings
 

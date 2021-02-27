@@ -2,7 +2,7 @@
 template: post
 title: Yet another article about U.S. healthcare and pharmaceuticals
 slug: /posts/healthcare
-draft: true
+draft: false
 date: 2021-02-27T19:16:03.515Z
 description: Trying to drive down a prescription drug price from 600/mo to 80/mo
   was thirty days of trial and tribulation.

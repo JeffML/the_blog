@@ -17,7 +17,7 @@ I ran into an issue where I had to run a continuous computation that return imme
 
 At first I thought I was confused about React state management, but after running into several dead-ends, it occured to me that the intensive process going on in the background was not allowing the updates to occur. Fortunately I can illustrate the issue (and one solution) with a few very simple examples.
 
-How it's suppose to work
+## How it's suppose to work
 
 Typically one updates a component via the useState() mechanism built into React. Let's start with a simple application that displays a list:
 
@@ -54,7 +54,9 @@ const itemsGenerator = (setItems) => {
 
 The generator uses setTimeout() to update the items state at increasing intervals of time. When I run this, I see that MyList adds new items one at a time at one second intervals. Perfect.
 
-How to break it
+<https://youtu.be/wCbcCuRhD8U>
+
+## How to break it
 
 As I said, with a computationally intensive operation running, this isn't so simple. It's possible to create a generator that ties up JavaScript's single event loop.
 
@@ -75,7 +77,9 @@ This functions the same as the previous generator, updating the state every seco
 
 This won't work for updating MyList in real time. Instead of each item being added to the list one second apart, all items appear on the list after three seconds.
 
-How to fix it
+<https://youtu.be/mG2k8Cc4MV8>
+
+## How to fix it
 
 Because the single thread processing the event loop is all tied up checking the time, there's nothing left over for processing UI events. The solution is to create another thread where all the intense stuff goes on.  Web workers are a simple way to start up threads, so I'll use those.
 
@@ -119,7 +123,9 @@ The worker awaits for the "Go!" message, and then takes off. It uses the same ti
 
 And now MyList is updated one item every second. 
 
-What happens if we use a *real* generator function
+<https://youtu.be/GT0HDBNIAJ0>
+
+## What happens if we use a *real* generator function?
 
 Generator functions have a yield command that might lead you to believe that it yields the event processing thread but no--it yields a value and that is all. In fact, I see very strange goings-on if I try to use a generator function.
 
@@ -170,4 +176,4 @@ App.js:56 {prevState: undefined, itemValue: 'ooo'}
 App.js:56 {prevState: undefined, itemValue: 'ooo'}
 ```
 
-The generator is working just fine, but the setItems() call...well, not so good. I'd like to explain what is going on here, but it is beyond my mortal comprehension. I'll post a follow-up if I come across a good explaination.
+The generator is working just fine, but the setItems() call...well, not so good. I'd like to tell you what is going on here, but it is beyond my mortal comprehension. I'll post a follow-up if I come across a good explanation.

@@ -13,15 +13,15 @@ tags:
   - state
   - worker
 ---
-I ran into an issue where I had to run a continuous computation that return immediate results I wanted to display in a React component. No matter what I tried, though, the component would only update at the *end* of the computation, and only then would the intermediate results show up--all at once.
+I recently ran into an issue where I was executing a continuous computation that returned intermediate results that I wanted to display in a React component in real time. No matter what I tried, though, the component would only update at the *end* of the computation, and only then would the intermediate results show up all at once.
 
-At first I thought I was confused about React state management, but after running into several dead-ends, it occured to me that the intensive process going on in the background was not allowing the updates to occur. Fortunately I can illustrate the issue (and one solution) with a few very simple examples.
+At first I thought I was missing something about React state management, but after running into several dead-ends, it occurred to me that the intensive processing going on in the background was not allowing the component updates to occur. Fortunately I can illustrate the issue (and one solution) with a few very simple examples.
 
-## How it's suppose to work
+## How it is suppose to work
 
-Typically one updates a component via the useState() mechanism built into React. Let's start with a simple application that displays a list:
+Typically, one updates a component via the `useState()` mechanism built into React. Let's start with a simple application that displays a list:
 
-```
+```javascript
 function App() {
   const [items, setItems] = useState(['x', 'y']);
 
@@ -40,11 +40,11 @@ function App() {
 }
 ```
 
-I initialize a state called `items` with an array; the component MyList (not shown) displays what is in `items`. This is basic React stuff.
+I initialize a state called `items` with an array and the component MyList (not shown) displays what is in `items`. This is basic React stuff.
 
-The useEffect hook starts off my item "generator" (not a generator function) when the component is loaded. 
+The `useEffect` hook starts off my item "generator" when the component is loaded. I use quotes, because it is not a generator function (but I cover that further down).
 
-```
+```javascript
 const itemsGenerator = (setItems) => {
   arr.forEach((item) => {
     setTimeout(() => setItems((prevState) => prevState.concat(item)), 1000 * delayCt++)
@@ -52,15 +52,15 @@ const itemsGenerator = (setItems) => {
 }
 ```
 
-The generator uses setTimeout() to update the items state at increasing intervals of time. When I run this, I see that MyList adds new items one at a time at one second intervals. Perfect.
+The generator uses `setTimeout() `to update the items state at increasing intervals of time. When I run this, I see that `MyList` adds new items one at a time at one second intervals. Perfect.
 
 <https://youtu.be/wCbcCuRhD8U>
 
 ## How to break it
 
-As I said, with a computationally intensive operation running, this isn't so simple. It's possible to create a generator that ties up JavaScript's single event loop.
+As I stated earlier, with a computationally intensive operation running in the background, this isn't so simple. It's possible to create a generator that ties up JavaScript's single event loop.
 
-```
+```javascript
 const itemsGenerator2 = (setItems) => {
   var index = 0;
   while (index < arr.length) {
@@ -73,17 +73,17 @@ const itemsGenerator2 = (setItems) => {
 }
 ```
 
-This functions the same as the previous generator, updating the state every second. You'll notice that it doesn't used setTimeout() to do this, however: it just runs a tight while loop, checking Data.now() continuously until a second passess for each element in the array. 
+This functions the same as the previous generator, updating the `items` state every second. You'll notice that it doesn't used `setTimeout()` this time: it just runs a tight while loop, checking `Date.now() `continuously until a second passes while iterating each element in the array. 
 
-This won't work for updating MyList in real time. Instead of each item being added to the list one second apart, all items appear on the list after three seconds.
+This just doesn't work for updating `MyList` in real time. Instead of each item being added to the list one second apart, all items appear on the list after three seconds.
 
 <https://youtu.be/mG2k8Cc4MV8>
 
 ## How to fix it
 
-Because the single thread processing the event loop is all tied up checking the time, there's nothing left over for processing UI events. The solution is to create another thread where all the intense stuff goes on.  Web workers are a simple way to start up threads, so I'll use those.
+The thread processing JavaScript's single thread is all tied up because of the `while` loop. There's no time left over for processing UI events. The solution is to create a new thread where all the computationally intense stuff happens. This frees up event processing. Web workers are a simple way to start up threads, so I'll use those.
 
-```
+```javascript
 const itemsGenerator3 = (setItems) => {
   let worker = new Worker('itemsGenerator3.js')
   worker.postMessage('Go!')
@@ -99,7 +99,7 @@ const itemsGenerator3 = (setItems) => {
 
 This new generator creates a worker thread, tells it to "Go!", and awaits responses.  Unless the worker asks to be terminated, each response (an item is assume) is tacked onto the items state. The code for the worker thread (also named itemsGenerator3 \[sorry]) resides in a public folder on the website (not with the source folder).
 
-```
+```javascript
 const arr = ["nnn", "ooo", "ppp", "qqq"];
 
 onmessage = e => {
@@ -129,7 +129,7 @@ And now MyList is updated one item every second.
 
 Generator functions have a yield command that might lead you to believe that it yields the event processing thread but no--it yields a value and that is all. In fact, I see very strange goings-on if I try to use a generator function.
 
-```
+```javascript
 
 function* itemTrueGenerator() {
   var index = 0;

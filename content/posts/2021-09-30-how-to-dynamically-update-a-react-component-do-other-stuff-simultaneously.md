@@ -2,7 +2,7 @@
 template: post
 title: How to Dynamically Update a React Component Do Other Stuff Simultaneously
 slug: posts/dynReact
-draft: true
+draft: false
 date: 2021-09-30T21:11:06.416Z
 description: Updating a React component is usually straightforward via
   useState() mechanisms. In a computationally intensive environment, though, it

@@ -81,7 +81,7 @@ This just doesn't work for updating `MyList` in real time. Instead of each item 
 
 ## How to fix it
 
-The thread processing JavaScript's single thread is all tied up because of the `while` loop. There's no time left over for processing UI events. The solution is to create a new thread where all the computationally intense stuff happens. This frees up event processing. Web workers are a simple way to start up threads, so I'll use those.
+The thread processing JavaScript's single thread is all tied up because of the `while` loop. There's no time left over for processing UI events. The solution is to create a new thread where all the computationally intense stuff happens. This frees up event processing. [Web workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) are a simple way to start up threads, so I'll use those.
 
 ```javascript
 const itemsGenerator3 = (setItems) => {
@@ -97,7 +97,7 @@ const itemsGenerator3 = (setItems) => {
 }
 ```
 
-This new generator creates a worker thread, tells it to "Go!", and awaits responses.  Unless the worker asks to be terminated, each response (an item is assume) is tacked onto the items state. The code for the worker thread (also named itemsGenerator3 \[sorry]) resides in a public folder on the website (not with the source folder).
+This new generator creates a worker thread, tells it to "Go!", and awaits responses.  Unless the worker asks to be terminated, each response (an item is assumed) is tacked onto the `items` state. The code for the worker thread (also named `itemsGenerator3, `**sorry**) resides in a public folder on the website (**not** stashed in the application source folder).
 
 ```javascript
 const arr = ["nnn", "ooo", "ppp", "qqq"];
@@ -119,7 +119,7 @@ onmessage = e => {
 }
 ```
 
-The worker awaits for the "Go!" message, and then takes off. It uses the same tight while loop as the previous generator, but does not update the items state; instead it posts a message back to the itemsGenerator3() caller. When the array is exhausted, it notifies the caller so that the worker can be terminated.
+The worker awaits for the "Go!" message and then takes off. It uses the same tight while loop as the previous generator, but does not update the `items` state; instead it posts a message back to the `itemsGenerator3() `caller. When the array is exhausted, it notifies the caller so that the worker can be terminated.
 
 And now MyList is updated one item every second. 
 
@@ -127,7 +127,7 @@ And now MyList is updated one item every second.
 
 ## What happens if we use a *real* generator function?
 
-Generator functions have a yield command that might lead you to believe that it yields the event processing thread but no--it yields a value and that is all. In fact, I see very strange goings-on if I try to use a generator function.
+Generator functions have a `yield` command that might lead you to believe that it yields the event processing thread, but no--it yields a value and that is all. In fact, I see very strange goings-on if I try to use a generator function.
 
 ```javascript
 
@@ -159,7 +159,7 @@ const itemsGenerator4 = (setItems) => {
 }
 ```
 
-The itemsGenerator4() function calls a true generator function, which yields values every second using that awful tight while loop. Alas, this just really messes things up. Note the console.log() statements in itemsGenerator4(). Witness:
+The `itemsGenerator4()` function calls a true generator function, which yields values every second using that awful tight while loop. Alas, this just really messes things up. Note the `console.log()` statements in `itemsGenerator4()`. Witness:
 
 ```
 App.js:56 {itemValue: 'nnn'}
@@ -176,4 +176,8 @@ App.js:56 {prevState: undefined, itemValue: 'ooo'}
 App.js:56 {prevState: undefined, itemValue: 'ooo'}
 ```
 
-The generator is working just fine, but the setItems() call...well, not so good. I'd like to tell you what is going on here, but it is beyond my mortal comprehension. I'll post a follow-up if I come across a good explanation.
+The generator is working just fine, but the setItems() call...well, not so much. I'd like to tell you what is going on here, but it is beyond my mortal comprehension. I'll post a follow-up if I come across a good explanation.
+
+\----
+
+Source code for this article is [here](https://github.com/JeffML/reactDynaList).
